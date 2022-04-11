@@ -1,19 +1,17 @@
 ![BLINK logo](./img/blink_logo_banner.png)
 --------------------------------------------------------------------------------
+BLINK是一个实体链接的python库，它使用维基百科作为目标知识库。
 
-BLINK is an Entity Linking python library that uses Wikipedia as the target knowledge base.
-
-The process of linking entities to Wikipedia is also known as [Wikification](https://en.wikipedia.org/wiki/Wikification).
+将实体链接到维基百科的过程也被称为 [Wikification](https://en.wikipedia.org/wiki/Wikification).
 
 
 ### news
-- (September 2020) added [ELQ](https://github.com/facebookresearch/BLINK/tree/master/elq) - end-to-end entity linking on questions
-- (3 July 2020) added [FAISS](https://github.com/facebookresearch/faiss) support in BLINK - efficient exact/approximate retrieval
+- (September 2020) added [ELQ](https://github.com/facebookresearch/BLINK/tree/master/elq) - 端到端的实体链接问题
+- (3 July 2020) added [FAISS](https://github.com/facebookresearch/faiss) support in BLINK - 高效的精确/近似检索
+- FAISS 论文：https://arxiv.org/abs/1702.08734
 
-
-## BLINK architecture
-
-The BLINK architecture is described in the following paper:
+## BLINK 架构
+BLINK架构将在下面的文件中描述：
 
 ```bibtex
 @inproceedings{wu2019zero,
@@ -26,12 +24,12 @@ The BLINK architecture is described in the following paper:
 
 [https://arxiv.org/pdf/1911.03814.pdf](https://arxiv.org/pdf/1911.03814.pdf)
 
-In a nutshell, BLINK uses a two stages approach for entity linking, based on fine-tuned BERT architectures. In the first stage, BLINK performs retrieval in a dense space defined by a bi-encoder that independently embeds the mention context and the entity descriptions. Each candidate is then examined more carefully with a cross-encoder, that concatenates the mention and entity text. BLINK achieves state-of-the-art results on multiple datasets.
+简而言之，BLINK使用两阶段方法进行实体链接，基于微调的BERT架构。
+在第一阶段，BLINK在一个由双编码器定义的密集空间中进行检索，该编码器独立地嵌入了提及背景和实体描述。
+然后用交叉编码器对每个候选者进行更仔细的检查，交叉编码器将提及和实体文本拼接起来。BLINK在多个数据集上取得了最先进的结果。
 
-
-## ELQ architecture
-
-ELQ does end-to-end entity linking on questions. The ELQ architecture is described in the following paper:
+## ELQ 架构
+ELQ对问题进行端到端的实体链接。ELQ的架构将在下面的文件中描述。
 
 ```bibtex
 @inproceedings{li2020efficient,
@@ -44,52 +42,49 @@ ELQ does end-to-end entity linking on questions. The ELQ architecture is describ
 
 [https://arxiv.org/pdf/2010.02413.pdf](https://arxiv.org/pdf/2010.02413.pdf)
 
-For more detail on how to run ELQ, refer to the [ELQ README](https://github.com/facebookresearch/BLINK/tree/master/elq).
+关于如何运行ELQ的更多细节, refer to the [ELQ README](https://github.com/facebookresearch/BLINK/tree/master/elq).
 
 
 
-## Use BLINK
+## 使用 BLINK
 
-### 1. Create conda environment and install requirements
+### 1. 创建conda环境和安装要求
 
-(optional) It might be a good idea to use a separate conda environment. It can be created by running:
+(可选）使用一个单独的conda环境可能是个好主意。它可以通过运行以下程序创建
 ```
 conda create -n blink37 -y python=3.7 && conda activate blink37
 pip install -r requirements.txt
 ```
 
-### 2. Download the BLINK models
+### 2. 下载BLINK模型
 
-The BLINK pretrained models can be downloaded using the following script:
+可以用以下脚本下载BLINK预训练的模型。
 ```console
 chmod +x download_blink_models.sh
 ./download_blink_models.sh
 ```
-
-We additionally provide a [FAISS](https://github.com/facebookresearch/faiss) indexer in BLINK, which enables efficient exact/approximate retrieval for biencoder model.
+我们还在BLINK中提供了一个[FAISS](https://github.com/facebookresearch/faiss)索引器，它可以为双编码器模型进行有效的精确/近似检索。
 
 - [flat index](http://dl.fbaipublicfiles.com/BLINK//faiss_flat_index.pkl)
 - [hnsw (approximate search) index](http://dl.fbaipublicfiles.com/BLINK/faiss_hnsw_index.pkl)
 
-
-To build and save FAISS (exact search) index yourself, run
+要自己建立和保存FAISS（精确搜索）索引，请运行
 `python blink/build_faiss_index.py --output_path models/faiss_flat_index.pkl`
 
 
-### 3. Use BLINK interactively
-A quick way to explore the BLINK linking capabilities is through the `main_dense` interactive script. BLINK uses [Flair](https://github.com/flairNLP/flair) for Named Entity Recognition (NER) to obtain entity mentions from input text, then run entity linking. 
+### 3. 以互动方式使用BLINK
+探索BLINK链接能力的一个快速方法是通过`main_dense`互动脚本。
+BLINK使用[Flair](https://github.com/flairNLP/flair)进行命名实体识别（NER），从输入文本中获得实体提及，然后运行实体链接。
 
 ```console
 python blink/main_dense.py -i
 ```
-
-Fast mode: in the fast mode the model only uses the bi-encoder, which is much faster (accuracy drops slightly, see details in "Benchmarking BLINK" section). 
+快速模式：在快速模式下，模型只使用双编码器，速度快得多（精度略有下降，详见 "基准测试BLINK "部分）。
 
 ```console
 python blink/main_dense.py -i --fast
 ```
-
-To run BLINK with saved FAISS index, run:
+要用保存的FAISS索引运行BLINK，请运行。
 ```console
 python blink/main_dense.py --faiss_index flat --index_path models/faiss_flat_index.pkl
 ```
@@ -99,17 +94,18 @@ python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_ind
 ```
 
 
-Example: 
+示例: 
 ```console
 Bert and Ernie are two Muppets who appear together in numerous skits on the popular children's television show of the United States, Sesame Street.
 ```
 Output:
 <img align="middle" src="img/example_result_light.png" height="480">
 
+注意：通过``--show_url``参数将显示每个实体的维基百科网址。
+显示的ID号与从``./download_models.sh``下载的``entity.jsonl``文件中的实体顺序一致（从0开始）。
+``entity.jsonl``文件包含每行一个实体的信息（包括维基百科网址、标题、文本等）。
 
-Note: passing ```--show_url``` argument will show the Wikipedia url of each entity. The id number displayed corresponds to the order of entities in the ```entity.jsonl``` file downloaded from ```./download_models.sh``` (starts from 0). The ```entity.jsonl``` file contains information of one entity per row (includes Wikipedia url, title, text, etc.).
-
-### 4. Use BLINK in your codebase
+### 4. 在你的代码中使用BLINK 
 
 ```console
 pip install -e git+git@github.com:facebookresearch/BLINK#egg=BLINK
@@ -164,10 +160,10 @@ _, _, _, _, _, predictions, scores, = main_dense.run(args, None, *models, test_d
 
 ## Benchmarking BLINK
 
-We provide scripts to benchmark BLINK against popular Entity Linking datasets.
-Note that our scripts evaluate BLINK in a full Wikipedia setting, that is, the BLINK entity library contains all Wikipedia pages.
+我们提供了一些脚本，以便根据流行的实体链接数据集对BLINK进行基准测试。
+请注意，我们的脚本是在完整的维基百科环境下评估BLINK的，也就是说，BLINK的实体库包含所有的维基百科页面。
 
-To benchmark BLINK run the following commands:
+要对BLINK进行基准测试，请运行以下命令。
 
 ```console
 ./scripts/get_train_and_benchmark_data.sh
@@ -175,7 +171,7 @@ python scripts/create_BLINK_benchmark_data.py
 python blink/run_benchmark.py
 ```
 
-The following table summarizes the performance of BLINK for the considered datasets.
+下表总结了BLINK对所考虑的数据集的性能。
 
 | dataset | biencoder accuracy (fast mode) | biencoder recall@10 | biencoder recall@30 | biencoder recall@100 | crossencoder normalized accuracy | overall unnormalized accuracy | support |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |  ------------- |  ------------- |
@@ -191,13 +187,13 @@ The following table summarizes the performance of BLINK for the considered datas
 <sup>1</sup> Licensed dataset available [here](https://catalog.ldc.upenn.edu/LDC2018T16).
 
 
-## The BLINK knowledge base
-The BLINK knowledge base (entity library) is based on the 2019/08/01 Wikipedia dump, downloadable in its raw format from [http://dl.fbaipublicfiles.com/BLINK/enwiki-pages-articles.xml.bz2](http://dl.fbaipublicfiles.com/BLINK/enwiki-pages-articles.xml.bz2)
+## BLINK知识库
+BLINK知识库（实体库）是基于2019/08/01维基百科的导出，其原始格式可从以下网站下载  [http://dl.fbaipublicfiles.com/BLINK/enwiki-pages-articles.xml.bz2](http://dl.fbaipublicfiles.com/BLINK/enwiki-pages-articles.xml.bz2)
 
-## BLINK with solr as IR system
-The first version of BLINK uses an [Apache Solr](https://lucene.apache.org/solr) based Information Retrieval system in combination with a BERT based cross-encoder.
-This IR-based version is now deprecated since it's outperformed by the current BLINK architecture.
-If you are interested in the old version, please refer to [this README](blink/candidate_retrieval/README.md).
+## 用solr作为IR系统的BLINK
+BLINK的第一个版本使用一个 [Apache Solr](https://lucene.apache.org/solr) 基于信息检索的系统与基于BERT的交叉编码器相结合。
+这个基于IR的版本现在已经废弃了，因为它的性能已经被目前的BLINK架构所超越。
+如果你对旧版本感兴趣，请参考 [this README](blink/candidate_retrieval/README.md).
 
 ## Troubleshooting
 
