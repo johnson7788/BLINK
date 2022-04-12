@@ -78,6 +78,17 @@ BLINK使用[Flair](https://github.com/flairNLP/flair)进行命名实体识别（
 
 ```console
 python blink/main_dense.py -i
+Beijing is the capital of China
+
+beijing
+id:2301073
+title:Beijing
+text: Beijing ( , nonstandard ; ), alternatively romanized as Peking ( ), is the capital of the People's Republic of China, the world's third most populous city proper, and most populous capital city. The city, located in northern China, is governed as a munici
+
+china
+id:2397
+title:China
+text: China (; lit. "Middle Kingdom"), officially the People's Republic of China (PRC), is a country in East Asia and the world's most populous country, with a population of around /1e9 round 3 billion. Covering approximately , it is the fourth largest country 
 ```
 快速模式：在快速模式下，模型只使用双编码器，速度快得多（精度略有下降，详见 "基准测试BLINK "部分）。
 

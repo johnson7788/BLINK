@@ -132,3 +132,18 @@ BLINK/
 
 # gensim需要安装gensim==3.8.3，否则报错AttributeError: 'KeyedVectors' object has no attribute 'key_to_index'
 https://github.com/flairNLP/flair/issues/2196
+
+# 示例：
+```
+Beijing is the capital of China
+
+beijing
+id:2301073
+title:Beijing
+text: Beijing ( , nonstandard ; ), alternatively romanized as Peking ( ), is the capital of the People's Republic of China, the world's third most populous city proper, and most populous capital city. The city, located in northern China, is governed as a munici
+
+china
+id:2397
+title:China
+text: China (; lit. "Middle Kingdom"), officially the People's Republic of China (PRC), is a country in East Asia and the world's most populous country, with a population of around /1e9 round 3 billion. Covering approximately , it is the fourth largest country 
+```
