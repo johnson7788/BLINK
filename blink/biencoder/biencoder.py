@@ -32,17 +32,17 @@ def load_biencoder(params):
 class BiEncoderModule(torch.nn.Module):
     def __init__(self, params):
         super(BiEncoderModule, self).__init__()
-        ctxt_bert = BertModel.from_pretrained(params["bert_model"])
-        cand_bert = BertModel.from_pretrained(params['bert_model'])
+        ctxt_bert = BertModel.from_pretrained(params["bert_model"])   #上下的模型
+        cand_bert = BertModel.from_pretrained(params['bert_model'])   # 实体的模型
         self.context_encoder = BertEncoder(
             ctxt_bert,
-            params["out_dim"],
-            layer_pulled=params["pull_from_layer"],
-            add_linear=params["add_linear"],
+            params["out_dim"],   #eg: 100
+            layer_pulled=params["pull_from_layer"],  #eg: -1
+            add_linear=params["add_linear"],  #eg: False
         )
         self.cand_encoder = BertEncoder(
             cand_bert,
-            params["out_dim"],
+            params["out_dim"],  #eg: 100
             layer_pulled=params["pull_from_layer"],
             add_linear=params["add_linear"],
         )
@@ -76,23 +76,23 @@ class BiEncoderRanker(torch.nn.Module):
         self.params = params
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() and not params["no_cuda"] else "cpu"
-        )
-        self.n_gpu = torch.cuda.device_count()
+        )   #这里用的是 cpu
+        self.n_gpu = torch.cuda.device_count()  # eg: 1
         # init tokenizer
         self.NULL_IDX = 0
         self.START_TOKEN = "[CLS]"
         self.END_TOKEN = "[SEP]"
         self.tokenizer = BertTokenizer.from_pretrained(
             params["bert_model"], do_lower_case=params["lowercase"]
-        )
+        )  #'bert_model': 'bert-large-uncased'
         # init model
         self.build_model()
         model_path = params.get("path_to_model", None)
-        if model_path is not None:
-            self.load_model(model_path)
-
+        if model_path is not None:  # 'models/biencoder_wiki_large.bin'
+            self.load_model(model_path)  # 加载模型
+        #模型放到设备上
         self.model = self.model.to(self.device)
-        self.data_parallel = params.get("data_parallel")
+        self.data_parallel = params.get("data_parallel")   # 是否并行, eg: False
         if self.data_parallel:
             self.model = torch.nn.DataParallel(self.model)
 

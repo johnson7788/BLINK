@@ -290,18 +290,18 @@ def load_models(args, logger=None):
 
     # load biencoder model
     if logger:
-        logger.info("loading biencoder model")
+        logger.info("开始加载 biencoder 模型")
     with open(args.biencoder_config) as json_file:
         biencoder_params = json.load(json_file)
         biencoder_params["path_to_model"] = args.biencoder_model
     biencoder = load_biencoder(biencoder_params)
-
+    # 交叉编码器模型，可以为None或者存在
     crossencoder = None
     crossencoder_params = None
     if not args.fast:
         # load crossencoder model
         if logger:
-            logger.info("loading crossencoder model")
+            logger.info("不使用fast模式，加载crossencoder模型")
         with open(args.crossencoder_config) as json_file:
             crossencoder_params = json.load(json_file)
             crossencoder_params["path_to_model"] = args.crossencoder_model
@@ -309,7 +309,7 @@ def load_models(args, logger=None):
 
     # load candidate entities
     if logger:
-        logger.info("loading candidate entities")
+        logger.info("加载候选实体集")
     (
         candidate_encoding,
         title2id,
@@ -663,7 +663,7 @@ if __name__ == "__main__":
         dest="output_path",
         type=str,
         default="output",
-        help="输出路径？？？",
+        help="日志输出路径",
     )
 
     parser.add_argument(
@@ -686,8 +686,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
+    # 日志文件, eg: output/log.txt
     logger = utils.get_logger(args.output_path)
-
+    # 加载模型
     models = load_models(args, logger)
     run(args, logger, *models)
