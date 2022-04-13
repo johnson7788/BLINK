@@ -107,8 +107,8 @@ BLINK/
 │   ├── all_entities_large.t7
 │   ├── biencoder_wiki_large.bin   #双编码器模型
 │   ├── biencoder_wiki_large.json  双编码器模型配置
-│   ├── crossencoder_wiki_large.bin
-│   ├── crossencoder_wiki_large.json
+│   ├── crossencoder_wiki_large.bin  #交叉编码模型的路径
+│   ├── crossencoder_wiki_large.json #交叉编码模型的配置
 │   ├── elq_large_params.txt
 │   ├── elq_webqsp_large.bin
 │   ├── elq_wiki_large.bin

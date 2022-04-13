@@ -630,7 +630,7 @@ if __name__ == "__main__":
         type=str,
         # default="models/tac_candidate_encode_large.t7",  # TAC-KBP
         default="models/all_entities_large.t7",  # ALL WIKIPEDIA!
-        help="Path to the entity catalogue.",
+        help="实体encoding的路径？？？",
     )
 
     # crossencoder
@@ -639,14 +639,14 @@ if __name__ == "__main__":
         dest="crossencoder_model",
         type=str,
         default="models/crossencoder_wiki_large.bin",
-        help="Path to the crossencoder model.",
+        help="交叉编码模型的路径",
     )
     parser.add_argument(
         "--crossencoder_config",
         dest="crossencoder_config",
         type=str,
         default="models/crossencoder_wiki_large.json",
-        help="Path to the crossencoder configuration.",
+        help="交叉编码模型的配置",
     )
 
     parser.add_argument(
@@ -654,7 +654,7 @@ if __name__ == "__main__":
         dest="top_k",
         type=int,
         default=10,
-        help="Number of candidates retrieved by biencoder.",
+        help="双编码器检索到的候选者数量",
     )
 
     # output folder
@@ -663,26 +663,26 @@ if __name__ == "__main__":
         dest="output_path",
         type=str,
         default="output",
-        help="Path to the output.",
+        help="输出路径？？？",
     )
 
     parser.add_argument(
-        "--fast", dest="fast", action="store_true", help="only biencoder mode"
+        "--fast", dest="fast", action="store_true", help="只使用双编码器模式"
     )
 
     parser.add_argument(
         "--show_url",
         dest="show_url",
         action="store_true",
-        help="whether to show entity url in interactive mode",
+        help="交互模式时是否展示实体url",
     )
 
     parser.add_argument(
-        "--faiss_index", type=str, default=None, help="whether to use faiss index",
+        "--faiss_index", type=str, default=None, help="是否使用faiss索引",
     )
 
     parser.add_argument(
-        "--index_path", type=str, default=None, help="path to load indexer",
+        "--index_path", type=str, default=None, help="如果使用faiss索引，那么索引文件的路径, pkl文件",
     )
 
     args = parser.parse_args()
