@@ -590,15 +590,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--interactive", "-i", action="store_true", help="Interactive mode."
+        "--interactive", "-i", action="store_true", help="交互模式"
     )
 
     # test_data
     parser.add_argument(
-        "--test_mentions", dest="test_mentions", type=str, help="Test Dataset."
+        "--test_mentions", dest="test_mentions", type=str, help="测试集"
     )
     parser.add_argument(
-        "--test_entities", dest="test_entities", type=str, help="Test Entities."
+        "--test_entities", dest="test_entities", type=str, help="测试实体集"
     )
 
     # biencoder
@@ -607,14 +607,14 @@ if __name__ == "__main__":
         dest="biencoder_model",
         type=str,
         default="models/biencoder_wiki_large.bin",
-        help="Path to the biencoder model.",
+        help="双编码器模型路径",
     )
     parser.add_argument(
         "--biencoder_config",
         dest="biencoder_config",
         type=str,
         default="models/biencoder_wiki_large.json",
-        help="Path to the biencoder configuration.",
+        help="双编码器模型配置",
     )
     parser.add_argument(
         "--entity_catalogue",
@@ -622,7 +622,7 @@ if __name__ == "__main__":
         type=str,
         # default="models/tac_entity.jsonl",  # TAC-KBP
         default="models/entity.jsonl",  # ALL WIKIPEDIA!
-        help="Path to the entity catalogue.",
+        help="实体目录的路径",
     )
     parser.add_argument(
         "--entity_encoding",

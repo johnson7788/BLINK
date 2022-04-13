@@ -105,14 +105,14 @@ BLINK/
 ├── LICENSE
 ├── models
 │   ├── all_entities_large.t7
-│   ├── biencoder_wiki_large.bin
-│   ├── biencoder_wiki_large.json
+│   ├── biencoder_wiki_large.bin   #双编码器模型
+│   ├── biencoder_wiki_large.json  双编码器模型配置
 │   ├── crossencoder_wiki_large.bin
 │   ├── crossencoder_wiki_large.json
 │   ├── elq_large_params.txt
 │   ├── elq_webqsp_large.bin
 │   ├── elq_wiki_large.bin
-│   ├── entity.jsonl
+│   ├── entity.jsonl   #实体目录的路径
 │   ├── entity_token_ids_128.t7
 │   └── faiss_hnsw_index.pkl
 ├── README.md

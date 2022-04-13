@@ -72,7 +72,7 @@ chmod +x download_blink_models.sh
 `python blink/build_faiss_index.py --output_path models/faiss_flat_index.pkl`
 
 
-### 3. 以互动方式使用BLINK
+### 3. 以交互方式使用BLINK
 探索BLINK链接能力的一个快速方法是通过`main_dense`互动脚本。
 BLINK使用[Flair](https://github.com/flairNLP/flair)进行命名实体识别（NER），从输入文本中获得实体提及，然后运行实体链接。
 
