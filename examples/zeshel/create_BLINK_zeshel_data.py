@@ -145,16 +145,19 @@ if __name__ == '__main__':
         '--document_path', 
         default='data/zeshel/documents',
         type=str,
+        help='原始的文档数据'
     )
     parser.add_argument(
         '--mention_path', 
         default='data/zeshel/mentions',
         type=str,
+        help='原始的提及数据'
     )
     parser.add_argument(
         '--output_path',
         default='data/zeshel/blink_format',
         type=str,
+        help="要保存的目录"
     )
     params = parser.parse_args()
     os.makedirs(params.output_path, exist_ok=True)

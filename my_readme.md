@@ -104,7 +104,7 @@ BLINK/
 │   └── logo.png
 ├── LICENSE
 ├── models
-│   ├── all_entities_large.t7
+│   ├── all_entities_large.t7   #所有的实体，实体对应的嵌入，torch.Size([5903527, 1024])
 │   ├── biencoder_wiki_large.bin   #双编码器模型
 │   ├── biencoder_wiki_large.json  双编码器模型配置
 │   ├── crossencoder_wiki_large.bin  #交叉编码模型的路径
@@ -112,7 +112,7 @@ BLINK/
 │   ├── elq_large_params.txt
 │   ├── elq_webqsp_large.bin
 │   ├── elq_wiki_large.bin
-│   ├── entity.jsonl   #实体目录的路径
+│   ├── entity.jsonl   #数据条数：5903527， 实体目录的路径, 实体的原数据， 一条数据  #{"text": " Anarchism is an anti-authoritarian political philosophy that rejects hierarchies deemed unjust and advocates their replacement with self-managed, self-governed societies based on voluntary, cooperative institutions. These institutions are often described as stateless societies, although several authors have defined them more specifically as distinct institutions based on non-hierarchical or free associations. Anarchism's central disagreement with other ideologies is that it holds the state to be undesirable, unnecessary, and harmful.  Anarchism is usually placed on the far-left of the political spectrum, and much of its economics and legal philosophy reflect anti-authoritarian interpretations of communism, collectivism, syndicalism, mutualism, or participatory economics. As anarchism does not offer a fixed body of doctrine from a single particular worldview, many anarchist types and traditions exist and varieties of anarchy diverge widely. Anarchist schools of thought can differ fundamentally, supporting anything from extreme individualism to complete collectivism. Strains of anarchism have often been divided into the categories of social and individualist anarchism, or similar dual classifications. ", "idx": "https://en.wikipedia.org/wiki?curid=12", "title": "Anarchism", "entity": "Anarchism"}
 │   ├── entity_token_ids_128.t7
 │   └── faiss_hnsw_index.pkl
 ├── README.md
@@ -147,3 +147,6 @@ id:2397
 title:China
 text: China (; lit. "Middle Kingdom"), officially the People's Republic of China (PRC), is a country in East Asia and the world's most populous country, with a population of around /1e9 round 3 billion. Covering approximately , it is the fourth largest country 
 ```
+
+# 实体数量
+5903527个，嵌入的维度 torch.Size([5903527, 1024])

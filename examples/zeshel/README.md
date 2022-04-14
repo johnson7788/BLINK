@@ -1,14 +1,14 @@
-## Example to train BLINK on Zero-shot Entity Linking dataset
+## 训练 BLINK on Zero-shot Entity Linking dataset
 
-Download dataset:
-
+下载数据集:
+    下载地址： https://drive.google.com/uc?export=download&id=1ZcKZ1is0VEkY9kNfPxIG19qEIqHE5LIO
     ./examples/zeshel/get_zeshel_data.sh
  
-Convert data to BLINK format:
+把数据集转换成BLINK格式:
 
     python examples/zeshel/create_BLINK_zeshel_data.py
 
-Train Biencoder model. Note: the following command requires to run on 8 GPUs with 32G memory. Reduce the train_batch_size and eval_batch_size for less GPUs/memory resources.
+训练双编码器模型。注意：以下命令需要在8个拥有32G内存的GPU上运行。减少train_batch_size和eval_batch_size以减少GPU/内存资源。
 
     python blink/biencoder/train_biencoder.py \
       --data_path data/zeshel/blink_format \
@@ -17,7 +17,7 @@ Train Biencoder model. Note: the following command requires to run on 8 GPUs wit
       --train_batch_size 128 --eval_batch_size 64 --bert_model bert-large-uncased \
       --type_optimization all_encoder_layers --data_parallel
 
-Get top-64 predictions from Biencoder model on train, valid and test dataset:
+从Biencoder模型中获得对训练、有效和测试数据集的前64预测结果。
 
     python blink/biencoder/eval_biencoder.py \
       --path_to_model models/zeshel/biencoder/pytorch_model.bin \
@@ -27,7 +27,7 @@ Get top-64 predictions from Biencoder model on train, valid and test dataset:
       --bert_model bert-large-uncased --mode train,valid,test \
       --zeshel True --data_parallel
 
-Train and eval crossencoder model:
+训练和评估交叉编码器模型:
 
     python blink/crossencoder/train_cross.py \
       --data_path  models/zeshel/top64_candidates/ \

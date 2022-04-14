@@ -99,42 +99,42 @@ def _annotate(ner_model, input_sentences):
 def _load_candidates(
     entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None
 ):
-    # only load candidate encoding if not using faiss index
+    # 只有当不使用faiss索引文件的时候，才加载所有候选实体的encoding
     if faiss_index is None:
-        candidate_encoding = torch.load(entity_encoding)
+        candidate_encoding = torch.load(entity_encoding)  # 加载entity_encoding： 'models/all_entities_large.t7'， candidate_encoding: torch.Size([5903527, 1024])
         indexer = None
     else:
         if logger:
-            logger.info("Using faiss index to retrieve entities.")
+            logger.info("使用 faiss 索引检索实体")
         candidate_encoding = None
-        assert index_path is not None, "Error! Empty indexer path."
+        assert index_path is not None, "错误! 传入的索引文件是空的,请检查!"
         if faiss_index == "flat":
             indexer = DenseFlatIndexer(1)
         elif faiss_index == "hnsw":
             indexer = DenseHNSWFlatIndexer(1)
         else:
-            raise ValueError("Error! Unsupported indexer type! Choose from flat,hnsw.")
+            raise ValueError("错误! 不支持的索引 indexer 类型! 仅支持flat或者hnsw。")
         indexer.deserialize_from(index_path)
 
-    # load all the 5903527 entities
-    title2id = {}
-    id2title = {}
-    id2text = {}
-    wikipedia_id2local_id = {}
-    local_idx = 0
+    # 一共5903527个实体
+    title2id = {}   # 标题到id的映射字典, 5903527
+    id2title = {}   #id到标题的映射,5903527
+    id2text = {}   # id到文本的映射,5903527
+    wikipedia_id2local_id = {}   #wiki原始id到本地定义id的映射,5903527
+    local_idx = 0   #初始化本地id的一个索引
     with open(entity_catalogue, "r") as fin:
-        lines = fin.readlines()
+        lines = fin.readlines()  # list, 5903527条，所有的实体数据，包含{"text": " xxxxxx ", "idx": "https://en.wikipedia.org/wiki?curid=12", "title": "Anarchism", "entity": "Anarchism"}
         for line in lines:
-            entity = json.loads(line)
-
+            entity = json.loads(line)   # 加载一条数据
+            # wikipedia_id的id和自己定义的id映射
             if "idx" in entity:
                 split = entity["idx"].split("curid=")
                 if len(split) > 1:
-                    wikipedia_id = int(split[-1].strip())
+                    wikipedia_id = int(split[-1].strip())  #eg: 12
                 else:
                     wikipedia_id = entity["idx"].strip()
 
-                assert wikipedia_id not in wikipedia_id2local_id
+                assert wikipedia_id not in wikipedia_id2local_id, f"有重复的Wikipedia 的id"
                 wikipedia_id2local_id[wikipedia_id] = local_idx
 
             title2id[entity["title"]] = local_idx
@@ -210,6 +210,9 @@ def __load_test(test_filename, kb2id, wikipedia_id2local_id, logger):
 def _get_test_samples(
     test_filename, test_entities_path, title2id, wikipedia_id2local_id, logger
 ):
+    """
+
+    """
     kb2id = None
     if test_entities_path:
         kb2id = __map_test_entities(test_entities_path, title2id, logger)
@@ -309,7 +312,7 @@ def load_models(args, logger=None):
 
     # load candidate entities
     if logger:
-        logger.info("加载候选实体集")
+        logger.info("开始加载候选实体集，实体数量较多，加载可能会比较慢")
     (
         candidate_encoding,
         title2id,
@@ -318,71 +321,71 @@ def load_models(args, logger=None):
         wikipedia_id2local_id,
         faiss_indexer,
     ) = _load_candidates(
-        args.entity_catalogue, 
-        args.entity_encoding, 
+        args.entity_catalogue,    #'models/entity.jsonl'
+        args.entity_encoding,    #'models/all_entities_large.t7'
         faiss_index=getattr(args, 'faiss_index', None), 
         index_path=getattr(args, 'index_path' , None),
         logger=logger,
     )
 
     return (
-        biencoder,
-        biencoder_params,
-        crossencoder,
-        crossencoder_params,
-        candidate_encoding,
-        title2id,
-        id2title,
-        id2text,
-        wikipedia_id2local_id,
-        faiss_indexer,
+        biencoder,   #初始化后的双编码器模型
+        biencoder_params,  #加载的双编码器模型的一些定义的参数
+        crossencoder,  #初始化后的交叉模型
+        crossencoder_params, #交叉模型对应的参数
+        candidate_encoding,  #实体对应的向量torch.Size([5903527, 1024])
+        title2id,    #标题对应的id的字典，5903527
+        id2title,    #id对应标题的字典，5903527
+        id2text,     # id对应的原始文件，5903527
+        wikipedia_id2local_id,   # wiki的id映射到我们定义的id的字典，5903527
+        faiss_indexer,  #faiss索引
     )
 
 
 def run(
     args,
-    logger,
-    biencoder,
-    biencoder_params,
-    crossencoder,
-    crossencoder_params,
-    candidate_encoding,
-    title2id,
-    id2title,
-    id2text,
-    wikipedia_id2local_id,
-    faiss_indexer=None,
-    test_data=None,
+    logger,  #日志
+    biencoder,  #初始化后的双编码器模型
+    biencoder_params,#加载的双编码器模型的一些定义的参数
+    crossencoder,  #初始化后的交叉模型
+    crossencoder_params,  #交叉模型对应的参数
+    candidate_encoding,   #实体对应的向量torch.Size([5903527, 1024])
+    title2id,   #标题对应的id的字典，5903527
+    id2title,   #id对应标题的字典，5903527
+    id2text,    # id对应的原始文件，5903527
+    wikipedia_id2local_id,   # wiki的id映射到我们定义的id的字典，5903527Dictionary of the # title corresponding to the id, 5903527
+    faiss_indexer=None,  #faiss索引
+    test_data=None,   #测试数据
 ):
-
+    #
     if not test_data and not args.test_mentions and not args.interactive:
         msg = (
-            "ERROR: either you start BLINK with the "
+            "错误: either you start BLINK with the "
             "interactive option (-i) or you pass in input test mentions (--test_mentions)"
             "and test entitied (--test_entities)"
         )
         raise ValueError(msg)
-
+    # wiki的实体id对应的url路径
     id2url = {
         v: "https://en.wikipedia.org/wiki?curid=%s" % k
         for k, v in wikipedia_id2local_id.items()
     }
-
+    # 停止条件
     stopping_condition = False
     while not stopping_condition:
 
         samples = None
-
+        # 交互模式
         if args.interactive:
-            logger.info("interactive mode")
+            logger.info("进入交互模式")
 
             # biencoder_params["eval_batch_size"] = 1
 
-            # Load NER model
+            # 加载 NER 模型
             ner_model = NER.get_model()
 
             # Interactive
-            text = input("insert text:")
+            text = input("请输入文本:")
 
             # Identify mentions
             samples = _annotate(ner_model, [text])
@@ -391,7 +394,7 @@ def run(
 
         else:
             if logger:
-                logger.info("test dataset mode")
+                logger.info("进入测试集测试模式")
 
             if test_data:
                 samples = test_data
@@ -590,12 +593,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--interactive", "-i", action="store_true", help="交互模式"
+        "--interactive", "-i", action="store_true", help="交互模式，或者传入--test_mentions 和--test_entities，自动测试"
     )
 
     # test_data
     parser.add_argument(
-        "--test_mentions", dest="test_mentions", type=str, help="测试集"
+        "--test_mentions", dest="test_mentions", type=str, help="测试提及"
     )
     parser.add_argument(
         "--test_entities", dest="test_entities", type=str, help="测试实体集"
@@ -630,7 +633,7 @@ if __name__ == "__main__":
         type=str,
         # default="models/tac_candidate_encode_large.t7",  # TAC-KBP
         default="models/all_entities_large.t7",  # ALL WIKIPEDIA!
-        help="实体encoding的路径？？？",
+        help="实体嵌入encoding的路径，维度，5903527, 1024",
     )
 
     # crossencoder
@@ -688,6 +691,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # 日志文件, eg: output/log.txt
     logger = utils.get_logger(args.output_path)
-    # 加载模型
+    # 加载模型， models：tuple，里面包含10个
     models = load_models(args, logger)
+    #
     run(args, logger, *models)
