@@ -7,7 +7,8 @@
 import argparse
 import json
 import sys
-
+import os
+import pickle
 from tqdm import tqdm
 import logging
 import torch
@@ -96,11 +97,19 @@ def _annotate(ner_model, input_sentences):
     return samples
 
 
-def _load_candidates(
-    entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None
-):
-    # 只有当不使用faiss索引文件的时候，才加载所有候选实体的encoding
+def _load_candidates(entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None, use_cache=True, minisize=-1):
+    """
+    只有当不使用faiss索引文件的时候，才加载所有候选实体的encoding
+    # use_cache: 使用加载缓存的方式，更快加载
+    :minisize, 测试多少条实体，太多实体被killed, -1表示不限制
+    """
+    # cache_file = "models/models_candidates.cache"
+    # if use_cache and os.path.exists(cache_file):
+    #     print(f"注意： 使用的{cache_file}缓存加载的实体预处理数据，如果不想使用，可以删掉这个文件")
+    #     tuple_data = pickle.load(open(cache_file, "rb"))
+    #     return tuple_data
     if faiss_index is None:
+        logger.info(f"加载实体encoding, 占用大量内存")
         candidate_encoding = torch.load(entity_encoding)  # 加载entity_encoding： 'models/all_entities_large.t7'， candidate_encoding: torch.Size([5903527, 1024])
         indexer = None
     else:
@@ -115,7 +124,7 @@ def _load_candidates(
         else:
             raise ValueError("错误! 不支持的索引 indexer 类型! 仅支持flat或者hnsw。")
         indexer.deserialize_from(index_path)
-
+    logger.info("开始加载实体数据")
     # 一共5903527个实体
     title2id = {}   # 标题到id的映射字典, 5903527
     id2title = {}   #id到标题的映射,5903527
@@ -124,7 +133,9 @@ def _load_candidates(
     local_idx = 0   #初始化本地id的一个索引
     with open(entity_catalogue, "r") as fin:
         lines = fin.readlines()  # list, 5903527条，所有的实体数据，包含{"text": " xxxxxx ", "idx": "https://en.wikipedia.org/wiki?curid=12", "title": "Anarchism", "entity": "Anarchism"}
-        for line in lines:
+        if minisize != -1:
+            lines = lines[:minisize]
+        for line in tqdm(lines, desc='加载实体数据'):
             entity = json.loads(line)   # 加载一条数据
             # wikipedia_id的id和自己定义的id映射
             if "idx" in entity:
@@ -141,7 +152,7 @@ def _load_candidates(
             id2title[local_idx] = entity["title"]
             id2text[local_idx] = entity["text"]
             local_idx += 1
-    return (
+    tuple_data = (
         candidate_encoding,
         title2id,
         id2title,
@@ -149,6 +160,8 @@ def _load_candidates(
         wikipedia_id2local_id,
         indexer,
     )
+    # pickle.dump(tuple_data, open(cache_file, "wb"))
+    return tuple_data
 
 
 def __map_test_entities(test_entities_path, title2id, logger):
@@ -203,7 +216,7 @@ def __load_test(test_filename, kb2id, wikipedia_id2local_id, logger):
             test_samples.append(record)
 
     if logger:
-        logger.info("{}/{} samples considered".format(len(test_samples), len(lines)))
+        logger.info("文件行数{}, 获取到{}条测试样本".format(len(lines), len(test_samples)))
     return test_samples
 
 

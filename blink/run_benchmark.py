@@ -66,7 +66,7 @@ table = prettytable.PrettyTable(
 )
 
 for dataset in DATASETS:
-    logger.info(dataset["name"])
+    logger.info(f'开始测试数据集: {dataset["name"]}')
     PARAMETERS["test_mentions"] = dataset["filename"]
 
     args = argparse.Namespace(**PARAMETERS)

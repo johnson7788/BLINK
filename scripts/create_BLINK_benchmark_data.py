@@ -66,7 +66,7 @@ def extract_questions(filename):
 
     # question id in the document
     question_i = 0
-
+    assert os.path.exists(filename), f"文件{filename}不存在"
     with open(filename) as fin:
         lines = fin.readlines()
 
@@ -187,6 +187,7 @@ def store_questions(questions, OUT_FILENAME):
         for q in questions:
             json.dump(q, fout)
             fout.write("\n")
+    print(f"保存到: {OUT_FILENAME}文件成功")
 
 
 def convert_to_BLINK_format(questions):
@@ -207,7 +208,7 @@ def convert_to_BLINK_format(questions):
 
 
 # AIDA-YAGO2
-print("AIDA-YAGO2")
+print("处理AIDA-YAGO2数据集")
 in_aida_filename = (
     "data/train_and_benchmark_data/basic_data/test_datasets/AIDA/AIDA-YAGO2-dataset.tsv"
 )
@@ -240,7 +241,7 @@ store_questions(testb_blink, out_testb_aida_filename)
 
 
 # ACE 2004
-print("ACE 2004")
+print("处理ACE 2004数据集")
 in_ace_filename = "data/train_and_benchmark_data/basic_data/test_datasets/wned-datasets/ace2004/ace2004.conll"
 ace_questions = convert_to_BLINK_format(extract_questions(in_ace_filename))
 out_ace_filename = "data/BLINK_benchmark/ace2004_questions.jsonl"

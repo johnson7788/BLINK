@@ -150,3 +150,9 @@ text: China (; lit. "Middle Kingdom"), officially the People's Republic of China
 
 # 实体数量
 5903527个，嵌入的维度 torch.Size([5903527, 1024])
+
+# 使用测试集测试文件
+python blink/main_dense.py --test_mentions examples/test_mentions.jsonl
+
+# 交互性测试
+python blink/main_dense.py -i
