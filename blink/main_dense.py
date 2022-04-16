@@ -432,14 +432,14 @@ def run(
 
         # prepare the data for biencoder
         if logger:
-            logger.info("preparing data for biencoder")
+            logger.info("准备数据用于biencoder")
         dataloader = _process_biencoder_dataloader(
             samples, biencoder.tokenizer, biencoder_params
         )
 
         # run biencoder
         if logger:
-            logger.info("run biencoder")
+            logger.info("开始运行 biencoder")
         top_k = args.top_k
         labels, nns, scores = _run_biencoder(
             biencoder, dataloader, candidate_encoding, top_k, faiss_indexer
