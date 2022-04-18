@@ -263,9 +263,9 @@ def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
         tokenizer,
         biencoder_params["max_context_length"],
         biencoder_params["max_cand_length"],
-        silent=True,
+        silent=False,
         logger=None,
-        debug=biencoder_params["debug"],
+        debug=True,
     )
     sampler = SequentialSampler(tensor_data)
     dataloader = DataLoader(
@@ -502,14 +502,14 @@ def run(
             or samples[0]["label_id"] < 0
         )
 
-        # prepare the data for biencoder
+        # 准备数据用于biencoder
         if logger:
             logger.info("准备数据用于biencoder")
         dataloader = _process_biencoder_dataloader(
             samples, biencoder.tokenizer, biencoder_params
         )
 
-        # run biencoder
+        # 运行 biencoder
         if logger:
             logger.info("开始运行 biencoder")
         top_k = args.top_k

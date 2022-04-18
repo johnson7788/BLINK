@@ -114,7 +114,7 @@ def process_mention_data(
     logger=None,
 ):
     """
-
+    处理提及数据
     :param samples:
     :type samples:
     :param tokenizer:
@@ -123,8 +123,8 @@ def process_mention_data(
     :type max_context_length:
     :param max_cand_length:
     :type max_cand_length:
-    :param silent:
-    :type silent:
+    :param silent: 显示进度
+    :type silent: bool
     :param mention_key:
     :type mention_key:
     :param context_key:
@@ -139,8 +139,8 @@ def process_mention_data(
     :type ent_end_token:
     :param title_token:
     :type title_token:
-    :param debug:
-    :type debug:
+    :param debug: 打印日志
+    :type debug: bool
     :param logger:
     :type logger:
     :return:
