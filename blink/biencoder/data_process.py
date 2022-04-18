@@ -113,6 +113,39 @@ def process_mention_data(
     debug=False,
     logger=None,
 ):
+    """
+
+    :param samples:
+    :type samples:
+    :param tokenizer:
+    :type tokenizer:
+    :param max_context_length:
+    :type max_context_length:
+    :param max_cand_length:
+    :type max_cand_length:
+    :param silent:
+    :type silent:
+    :param mention_key:
+    :type mention_key:
+    :param context_key:
+    :type context_key:
+    :param label_key:
+    :type label_key:
+    :param title_key:
+    :type title_key:
+    :param ent_start_token:
+    :type ent_start_token:
+    :param ent_end_token:
+    :type ent_end_token:
+    :param title_token:
+    :type title_token:
+    :param debug:
+    :type debug:
+    :param logger:
+    :type logger:
+    :return:
+    :rtype:
+    """
     processed_samples = []
 
     if debug:

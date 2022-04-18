@@ -184,6 +184,19 @@ def __map_test_entities(test_entities_path, title2id, logger):
 
 
 def __load_test(test_filename, kb2id, wikipedia_id2local_id, logger):
+    """
+    加载给定的测试集文本
+    :param test_filename:
+    :type test_filename:
+    :param kb2id:
+    :type kb2id:
+    :param wikipedia_id2local_id:
+    :type wikipedia_id2local_id:
+    :param logger:
+    :type logger:
+    :return:
+    :rtype:
+    """
     test_samples = []
     with open(test_filename, "r") as fin:
         lines = fin.readlines()
@@ -224,16 +237,27 @@ def _get_test_samples(
     test_filename, test_entities_path, title2id, wikipedia_id2local_id, logger
 ):
     """
-
+    test_filename： 测试提及的文件, eg: examples/test_mentions.jsonl
     """
     kb2id = None
     if test_entities_path:
         kb2id = __map_test_entities(test_entities_path, title2id, logger)
+    # 返回格式是List，其中一条样本： {'context_left': 'cricket -', 'mention': 'leicestershire', 'context_right': "take over at top after innings victory .  london 1996-08-30  west indian all-rounder phil simmons took four for 38 on friday as leicestershire beat somerset by an innings and 39 runs in two days to take over at the head of the county championship .  their stay on top , though , may be short-lived as title rivals essex , derbyshire and surrey all closed in on victory while kent made up for lost time in their rain-affected match against nottinghamshire .  after bowling somerset out for 83 on the opening morning at grace road , leicestershire extended their first innings by 94 runs before being bowled out for 296 with england discard andy caddick taking three for 83 .  trailing by 213 , somerset got a solid start to their second innings before simmons stepped in to bundle them out for 174 .  essex , however , look certain to regain their top spot after nasser hussain and peter such gave them a firm grip on their match against yorkshire at headingley .  hussain , considered surplus to england 's one-day requirements , struck 158 , his first championship century of the season , as essex reached 372 and took a first innings lead of 82 .  by the close yorkshire had turned that into a 37-run advantage but off-spinner such had scuttled their hopes , taking four for 24 in 48 balls and leaving them hanging on 119 for five and praying for rain .  at the oval , surrey captain chris lewis , another man dumped by england , continued to silence his critics as he followed his four for 45 on thursday with 80 not out on friday in the match against warwickshire .  he was well backed by england hopeful mark butcher who made 70 as surrey closed on 429 for seven , a lead of 234 .  derbyshire kept up the hunt for their first championship title since 1936 by reducing worcestershire to 133 for five in their second innings , still 100 runs away from avoiding an innings defeat .  australian tom moody took six for 82 but chris adams , 123 , and tim o'gorman , 109 , took derbyshire to 471 and a first innings lead of 233 .  after the frustration of seeing the opening day of their match badly affected by the weather , kent stepped up a gear to dismiss nottinghamshire for 214 .  they were held up by a gritty 84 from paul johnson but ex-england fast bowler martin mccague took four for 55 .  by stumps kent had reached 108 for three .", 'query_id': '947testa CRICKET:0', 'label_id': 461053, 'Wikipedia_ID': '1622318', 'Wikipedia_URL': 'http://en.wikipedia.org/wiki/Leicestershire_County_Cricket_Club', 'Wikipedia_title': 'Leicestershire County Cricket Club', 'label': '1622318'}
     test_samples = __load_test(test_filename, kb2id, wikipedia_id2local_id, logger)
     return test_samples
 
-
 def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
+    """
+
+    :param samples:
+    :type samples:
+    :param tokenizer:
+    :type tokenizer:
+    :param biencoder_params:
+    :type biencoder_params:
+    :return:
+    :rtype:
+    """
     _, tensor_data = process_mention_data(
         samples,
         tokenizer,
@@ -251,6 +275,21 @@ def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
 
 
 def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer=None):
+    """
+
+    :param biencoder:
+    :type biencoder:
+    :param dataloader:
+    :type dataloader:
+    :param candidate_encoding:
+    :type candidate_encoding:
+    :param top_k:
+    :type top_k:
+    :param indexer:
+    :type indexer:
+    :return:
+    :rtype:
+    """
     biencoder.model.eval()
     labels = []
     nns = []
@@ -277,6 +316,17 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
 
 
 def _process_crossencoder_dataloader(context_input, label_input, crossencoder_params):
+    """
+
+    :param context_input:
+    :type context_input:
+    :param label_input:
+    :type label_input:
+    :param crossencoder_params:
+    :type crossencoder_params:
+    :return:
+    :rtype:
+    """
     tensor_data = TensorDataset(context_input, label_input)
     sampler = SequentialSampler(tensor_data)
     dataloader = DataLoader(
@@ -286,6 +336,21 @@ def _process_crossencoder_dataloader(context_input, label_input, crossencoder_pa
 
 
 def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cuda"):
+    """
+
+    :param crossencoder:
+    :type crossencoder:
+    :param dataloader:
+    :type dataloader:
+    :param logger:
+    :type logger:
+    :param context_len:
+    :type context_len:
+    :param device:
+    :type device:
+    :return:
+    :rtype:
+    """
     crossencoder.model.eval()
     accuracy = 0.0
     crossencoder.to(device)
@@ -303,8 +368,15 @@ def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cud
 
 
 def load_models(args, logger=None):
+    """
 
-    # load biencoder model
+    :param args:
+    :type args:
+    :param logger:
+    :type logger:
+    :return:
+    :rtype:
+    """
     if logger:
         logger.info("开始加载 biencoder 模型")
     with open(args.biencoder_config) as json_file:
@@ -412,7 +484,7 @@ def run(
             if test_data:
                 samples = test_data
             else:
-                # Load test mentions
+                # 加载测试提及
                 samples = _get_test_samples(
                     args.test_mentions,
                     args.test_entities,
@@ -423,7 +495,7 @@ def run(
 
             stopping_condition = True
 
-        # don't look at labels
+        # keep_all: bool, eg: False, 是否看标签
         keep_all = (
             args.interactive
             or samples[0]["label"] == "unknown"
@@ -706,5 +778,5 @@ if __name__ == "__main__":
     logger = utils.get_logger(args.output_path)
     # 加载模型， models：tuple，里面包含10个
     models = load_models(args, logger)
-    #
+    # 预测
     run(args, logger, *models)
