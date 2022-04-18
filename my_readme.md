@@ -154,5 +154,8 @@ text: China (; lit. "Middle Kingdom"), officially the People's Republic of China
 # 使用测试集测试文件
 python blink/main_dense.py --test_mentions examples/test_mentions.jsonl
 
-# 交互性测试
+# 交互性测试， 加载all_entities_large.t7文件缓慢
 python blink/main_dense.py -i
+
+# 快速加载索引, 加载pkl文件缓慢, 64GB内存不够用
+python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_index.pkl

@@ -246,11 +246,11 @@ def _get_test_samples(
     test_samples = __load_test(test_filename, kb2id, wikipedia_id2local_id, logger)
     return test_samples
 
-def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
+def _process_biencoder_dataloader(samples, tokenizer, biencoder_params, logger=None):
     """
-
-    :param samples:
-    :type samples:
+    根据给定的样本samples，构建双编码器的Dataloader
+    :param samples: 每条样本的信息包含{'context_left': 'cricket -', 'mention': 'leicestershire', 'context_right': "take over at top after innings victor", 'query_id': '947testa CRICKET:0', 'label_id': 461053, 'Wikipedia_ID': '1622318', 'Wikipedia_URL': 'http://en.wikipedia.org/wiki/Leicestershire_County_Cricket_Club', 'Wikipedia_title': 'Leicestershire County Cricket Club', 'label': '1622318'}
+    :type samples: list
     :param tokenizer:
     :type tokenizer:
     :param biencoder_params:
@@ -264,9 +264,9 @@ def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
         biencoder_params["max_context_length"],
         biencoder_params["max_cand_length"],
         silent=False,
-        logger=None,
+        logger=logger,
         debug=True,
-    )
+    )  # tensor_data： 获取上下文，候选，和标签的tensor id格式
     sampler = SequentialSampler(tensor_data)
     dataloader = DataLoader(
         tensor_data, sampler=sampler, batch_size=biencoder_params["eval_batch_size"]
@@ -276,18 +276,18 @@ def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
 
 def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer=None):
     """
-
-    :param biencoder:
+    给定的提及和候选实体之间计算相似度分数
+    :param biencoder: 双编码器模型
     :type biencoder:
-    :param dataloader:
+    :param dataloader: 数据集
     :type dataloader:
-    :param candidate_encoding:
+    :param candidate_encoding:  实体嵌入， torch.Size([5903527, 1024]), [实体数量，实体嵌入维度]
     :type candidate_encoding:
-    :param top_k:
-    :type top_k:
-    :param indexer:
+    :param top_k: 双编码器检索到的候选者数量
+    :type top_k: int
+    :param indexer: None 或者初始化的FAISS索引
     :type indexer:
-    :return:
+    :return:  ground_truth 实体id,对应的预测的候选实体的id,每个预测的候选实体的分数
     :rtype:
     """
     biencoder.model.eval()
@@ -295,23 +295,23 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
     nns = []
     all_scores = []
     for batch in tqdm(dataloader):
-        context_input, _, label_ids = batch
+        context_input, _, label_ids = batch  #context_input, {batch_size,max_context_length], label_ids: [batch_size,1]
         with torch.no_grad():
-            if indexer is not None:
+            if indexer is not None: # indexer存在时，使用faiss快速索引
                 context_encoding = biencoder.encode_context(context_input).numpy()
                 context_encoding = np.ascontiguousarray(context_encoding)
                 scores, indicies = indexer.search_knn(context_encoding, top_k)
             else:
                 scores = biencoder.score_candidate(
                     context_input, None, cand_encs=candidate_encoding  # .to(device)
-                )
-                scores, indicies = scores.topk(top_k)
+                )  # context_input 是提及的输入，cand_encs是所有的候选实体，计算提及表示和候选实体表示之间的相似度分数, scores,返回： torch.Size([8, 5903527])， [batch_size, 所有的候选实体数量]
+                scores, indicies = scores.topk(top_k)  # 选取topk个, eg: [8,10], scores: indicies: [batch_size, topk]
                 scores = scores.data.numpy()
                 indicies = indicies.data.numpy()
-
+        # labels: [batch_size], ground_truth 实体id, [array([461053]), array([8672]), array([776698]), array([634737]), array([461053]), array([461023]), array([461036]), array([503021])]
         labels.extend(label_ids.data.numpy())
-        nns.extend(indicies)
-        all_scores.extend(scores)
+        nns.extend(indicies)  # 对应的预测的候选实体的id
+        all_scores.extend(scores)   # 每个预测的候选实体的分数
     return labels, nns, all_scores
 
 
@@ -506,17 +506,17 @@ def run(
         if logger:
             logger.info("准备数据用于biencoder")
         dataloader = _process_biencoder_dataloader(
-            samples, biencoder.tokenizer, biencoder_params
+            samples, biencoder.tokenizer, biencoder_params, logger
         )
 
         # 运行 biencoder
         if logger:
             logger.info("开始运行 biencoder")
-        top_k = args.top_k
+        top_k = args.top_k  #双编码器检索到的候选者数量
+        # labels： ground_truth实体id， nns：预测候选实体id， scores：预测候选实体的分数,  都是list格式
         labels, nns, scores = _run_biencoder(
             biencoder, dataloader, candidate_encoding, top_k, faiss_indexer
         )
-
         if args.interactive:
 
             print("\nfast (biencoder) predictions:")

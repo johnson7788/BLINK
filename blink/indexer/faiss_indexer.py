@@ -36,10 +36,11 @@ class DenseIndexer(object):
         faiss.write_index(self.index, index_file)
 
     def deserialize_from(self, index_file: str):
-        logger.info("Loading index from %s", index_file)
+        logger.info("开始加载 index 文件从 %s", index_file)
+        assert os.path.exists((index_file)), f"文件{index_file}不存在，请检查"
         self.index = faiss.read_index(index_file)
         logger.info(
-            "Loaded index of type %s and size %d", type(self.index), self.index.ntotal
+            "L加载index 文件的类型是: %s， 大小是: %d", type(self.index), self.index.ntotal
         )
 
 

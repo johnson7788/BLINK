@@ -50,12 +50,12 @@ class BiEncoderModule(torch.nn.Module):
 
     def forward(
         self,
-        token_idx_ctxt,
-        segment_idx_ctxt,
-        mask_ctxt,
-        token_idx_cands,
-        segment_idx_cands,
-        mask_cands,
+        token_idx_ctxt,  #[batch_size, max_context_length],
+        segment_idx_ctxt,  #[batch_size, max_context_length]
+        mask_ctxt,  #[batch_size, max_context_length]
+        token_idx_cands,  # eg: None
+        segment_idx_cands,  # eg: None
+        mask_cands,  # eg: None
     ):
         embedding_ctxt = None
         if token_idx_ctxt is not None:
@@ -147,21 +147,21 @@ class BiEncoderRanker(torch.nn.Module):
     # If cand_encs is provided (pre-computed), cand_ves is ignored
     def score_candidate(
         self,
-        text_vecs,
-        cand_vecs,
+        text_vecs,  # 文本向量， [batch_size, max_context_length], eg: [8,32]
+        cand_vecs,   # eg: None
         random_negs=True,
-        cand_encs=None,  # pre-computed candidate encoding.
+        cand_encs=None,  # 预先计算的实体嵌入， torch.Size([5903527, 1024]), [实体数量，实体嵌入维度].
     ):
-        # Encode contexts first
+        # 首先编码上下文, 生成bert的输入格式， token_idx, segment_idx, mask
         token_idx_ctxt, segment_idx_ctxt, mask_ctxt = to_bert_input(
             text_vecs, self.NULL_IDX
         )
         embedding_ctxt, _ = self.model(
             token_idx_ctxt, segment_idx_ctxt, mask_ctxt, None, None, None
-        )
+        )  # 经过bert编码后的上下文的向量， [batch_size, embed_size], eg: [8,1024]
 
-        # Candidate encoding is given, do not need to re-compute
-        # Directly return the score of context encoding and candidate encoding
+        # 候选实体的encoding如果给定了，那么就不要重新计算了，直接返回上下文encoding和候选encoding之间的矩阵相乘分数
+        #
         if cand_encs is not None:
             return embedding_ctxt.mm(cand_encs.t())
 
