@@ -59,7 +59,8 @@ class CrossEncoderModule(torch.nn.Module):
     def forward(
         self, token_idx_ctxt, segment_idx_ctxt, mask_ctxt,
     ):
-        embedding_ctxt = self.encoder(token_idx_ctxt, segment_idx_ctxt, mask_ctxt)
+        embedding_ctxt = self.encoder(token_idx_ctxt, segment_idx_ctxt, mask_ctxt)   #维度 [topk候选,1]
+
         return embedding_ctxt.squeeze(-1)
 
 
@@ -133,19 +134,19 @@ class CrossEncoderRanker(torch.nn.Module):
         )
 
     def score_candidate(self, text_vecs, context_len):
-        # Encode contexts first
-        num_cand = text_vecs.size(1)
-        text_vecs = text_vecs.view(-1, text_vecs.size(-1))
+        # 首先编码上下文，
+        num_cand = text_vecs.size(1)  # 维度2是候选实体的个数, eg: 10
+        text_vecs = text_vecs.view(-1, text_vecs.size(-1))  #合并到 batch_size， 变成[batch_size* topk候选, max_seq_length]
         token_idx_ctxt, segment_idx_ctxt, mask_ctxt = to_bert_input(
             text_vecs, self.NULL_IDX, context_len,
-        )
+        )  # 生成mask和segment id， embedding_ctxt： 【topk候选]
         embedding_ctxt = self.model(token_idx_ctxt, segment_idx_ctxt, mask_ctxt,)
-
+        # 加回batch_size的维度
         return embedding_ctxt.view(-1, num_cand)
 
     def forward(self, input_idx, label_input, context_len):
-        scores = self.score_candidate(input_idx, context_len)
-        loss = F.cross_entropy(scores, label_input, reduction="mean")
+        scores = self.score_candidate(input_idx, context_len)   #scores, [batch_size, topk候选], eg: [1,10]
+        loss = F.cross_entropy(scores, label_input, reduction="mean")   # 二分类交叉熵损失函数
         return loss, scores
 
 
@@ -154,9 +155,9 @@ def to_bert_input(token_idx, null_idx, segment_pos):
         return token_idx, segment_idx and mask
     """
     segment_idx = token_idx * 0
-    if segment_pos > 0:
+    if segment_pos > 0:  # 多少长度以后的segment_id是1，切分成句子1和句子2
         segment_idx[:, segment_pos:] = token_idx[:, segment_pos:] > 0
-
+    # token_idx中值等于null_idx的地方是mask，这里为0的部分是需要mask的
     mask = token_idx != null_idx
     # nullify elements in case self.NULL_IDX was not 0
     # token_idx = token_idx * mask.long()

@@ -29,13 +29,13 @@ class BertEncoder(nn.Module):
         output_bert, output_pooler = self.bert_model(
             token_ids, segment_ids, attention_mask
         )
-        # get embedding of [CLS] token
+        #获取 [CLS] token对应的向量， 或者最后一层的所有向量
         if self.additional_linear is not None:
-            embeddings = output_pooler
+            embeddings = output_pooler   #[batch_size, embedding_dim], eg: [10,1024]
         else:
             embeddings = output_bert[:, 0, :]
 
-        # in case of dimensionality reduction
+        # #如果有额外线性层，使用额外线性层
         if self.additional_linear is not None:
             result = self.additional_linear(self.dropout(embeddings))
         else:

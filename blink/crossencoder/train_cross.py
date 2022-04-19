@@ -105,15 +105,15 @@ def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=F
         if zeshel:
             src = batch[2]
             cnt += 1
-        batch = tuple(t.to(device) for t in batch)
-        context_input = batch[0]
-        label_input = batch[1]
+        batch = tuple(t.to(device) for t in batch)  # 每条样本都放到device上
+        context_input = batch[0]  # 双编码器和交叉编码器的input_ids 拼接后的上下文的input_id,  [batch_size, topk_候选个数,max_seq_length]
+        label_input = batch[1]   # 预测的标签， [batch_size]， 应该预测tokp的第几个标签是正确的
         with torch.no_grad():
+            # eval_loss： 损失， logits：[batch_size, topk] 预测logits
             eval_loss, logits = reranker(context_input, label_input, context_length)
-
         logits = logits.detach().cpu().numpy()
         label_ids = label_input.cpu().numpy()
-
+        # 对比预测结果和真实值，计算准确率, label_ids: [1], logits: [batch_size, topk] 预测logits
         tmp_eval_accuracy, eval_result = utils.accuracy(logits, label_ids)
 
         eval_accuracy += tmp_eval_accuracy
@@ -130,7 +130,7 @@ def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=F
     normalized_eval_accuracy = -1
     if nb_eval_examples > 0:
         normalized_eval_accuracy = eval_accuracy / nb_eval_examples
-    if zeshel:
+    if zeshel:  #zeroshot模式
         macro = 0.0
         num = 0.0 
         for i in range(len(WORLDS)):
@@ -139,11 +139,11 @@ def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=F
                 macro += acc[i]
                 num += 1
         if num > 0:
-            logger.info("Macro accuracy: %.5f" % (macro / num))
-            logger.info("Micro accuracy: %.5f" % normalized_eval_accuracy)
+            logger.info("Macro准确率: %.5f" % (macro / num))
+            logger.info("Micro准确率: %.5f" % normalized_eval_accuracy)
     else:
         if logger:
-            logger.info("Eval accuracy: %.5f" % normalized_eval_accuracy)
+            logger.info("评估的准确率: %.5f" % normalized_eval_accuracy)
 
     results["normalized_accuracy"] = normalized_eval_accuracy
     results["logits"] = all_logits
