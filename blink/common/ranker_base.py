@@ -15,8 +15,8 @@ class BertEncoder(nn.Module):
     def __init__(
         self, bert_model, output_dim, layer_pulled=-1, add_linear=None):
         super(BertEncoder, self).__init__()
-        self.layer_pulled = layer_pulled   #eg: -1
-        bert_output_dim = bert_model.embeddings.word_embeddings.weight.size(1)   #eg: 1024
+        self.layer_pulled = layer_pulled   #eg: -1， 默认使用bert最后一层的输出，这里没有使用
+        bert_output_dim = bert_model.embeddings.word_embeddings.weight.size(1)   #eg: 1024 或者768，large是1024
         # 加载的bert模型
         self.bert_model = bert_model
         if add_linear:

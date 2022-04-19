@@ -266,3 +266,4 @@ dmypy.json
 models
 *.tar.gz
 examples/zeshel/zeshel.tar.bz2
+data/

@@ -31,9 +31,14 @@ def load_biencoder(params):
 
 class BiEncoderModule(torch.nn.Module):
     def __init__(self, params):
+        """
+
+        :param params: 约38个参数，{'silent': True, 'debug': False, 'data_parallel': False, 'no_cuda': False, 'top_k': 10, 'seed': 52313, 'zeshel': True, 'max_seq_length': 256, 'max_context_length': 128, 'max_cand_length': 128, 'path_to_model': None, 'bert_model': 'bert-base-uncased', 'pull_from_layer': -1, 'lowercase': True, 'context_key': 'context', 'out_dim': 1, 'add_linear': False, 'data_path': 'data/zeshel/blink_format', 'output_path': 'models/zeshel/biencoder', 'evaluate': False, 'output_eval_file': None, 'train_batch_size': 8, 'max_grad_norm': 1.0, 'learning_rate': 1e-05, 'num_train_epochs': 5, 'print_interval': 10, 'eval_interval': 100, 'save_interval': 1, 'warmup_proportion': 0.1, 'gradient_accumulation_steps': 1, 'type_optimization': 'all_encoder_layers', 'shuffle': False, 'eval_batch_size': 8, 'mode': 'valid', 'save_topk_result': False, 'encode_batch_size': 8, 'cand_pool_path': None, 'cand_encode_path': None}
+        :type params:
+        """
         super(BiEncoderModule, self).__init__()
-        ctxt_bert = BertModel.from_pretrained(params["bert_model"])   #上下的模型
-        cand_bert = BertModel.from_pretrained(params['bert_model'])   # 实体的模型
+        ctxt_bert = BertModel.from_pretrained(params["bert_model"])   #提及上下文的模型
+        cand_bert = BertModel.from_pretrained(params['bert_model'])   # 知识图谱中实体上下文的模型的模型
         self.context_encoder = BertEncoder(
             ctxt_bert,
             params["out_dim"],   #eg: 100
@@ -72,11 +77,18 @@ class BiEncoderModule(torch.nn.Module):
 
 class BiEncoderRanker(torch.nn.Module):
     def __init__(self, params, shared=None):
+        """
+
+        :param params:
+        :type params:
+        :param shared:
+        :type shared:
+        """
         super(BiEncoderRanker, self).__init__()
         self.params = params
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() and not params["no_cuda"] else "cpu"
-        )   #这里用的是 cpu
+        )   #cuda
         self.n_gpu = torch.cuda.device_count()  # eg: 1
         # init tokenizer
         self.NULL_IDX = 0
@@ -85,7 +97,7 @@ class BiEncoderRanker(torch.nn.Module):
         self.tokenizer = BertTokenizer.from_pretrained(
             params["bert_model"], do_lower_case=params["lowercase"]
         )  #'bert_model': 'bert-large-uncased'
-        # init model
+        # 初始化双编码器的2个模型，模型1：提及的上下文处理，模型2：知识图谱中实体的上下处理
         self.build_model()
         model_path = params.get("path_to_model", None)
         if model_path is not None:  # 'models/biencoder_wiki_large.bin'

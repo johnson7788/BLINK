@@ -107,19 +107,26 @@ def get_scheduler(params, optimizer, len_train_data, logger):
 
 
 def main(params):
-    model_output_path = params["output_path"]
+    """
+    主函数
+    :param params:  所有参数
+    :type params:
+    :return:
+    :rtype:
+    """
+    model_output_path = params["output_path"]  #模型保存路径
     if not os.path.exists(model_output_path):
         os.makedirs(model_output_path)
     logger = utils.get_logger(params["output_path"])
 
-    # Init model
+    #初始化模型
     reranker = BiEncoderRanker(params)
     tokenizer = reranker.tokenizer
-    model = reranker.model
+    model = reranker.model   #双编码器模型
 
     device = reranker.device
     n_gpu = reranker.n_gpu
-
+    # 梯度累加不能小于1
     if params["gradient_accumulation_steps"] < 1:
         raise ValueError(
             "Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
@@ -134,17 +141,17 @@ def main(params):
     )
     train_batch_size = params["train_batch_size"]
     eval_batch_size = params["eval_batch_size"]
-    grad_acc_steps = params["gradient_accumulation_steps"]
+    grad_acc_steps = params["gradient_accumulation_steps"]  #eg: 1
 
-    # Fix the random seeds
+    # 固定随机种子
     seed = params["seed"]
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     if reranker.n_gpu > 0:
         torch.cuda.manual_seed_all(seed)
-
-    # Load train data
+    #加载训练数据
+    logger.info("开始加载训练数据: {params['data_path']}")
     train_samples = utils.read_dataset("train", params["data_path"])
     logger.info("Read %d train samples." % len(train_samples))
 
@@ -306,12 +313,13 @@ def main(params):
 
 if __name__ == "__main__":
     parser = BlinkParser(add_model_args=True)
+    # 添加模型的训练参数
     parser.add_training_args()
     parser.add_eval_args()
 
     # args = argparse.Namespace(**params)
     args = parser.parse_args()
-    print(args)
+    print('参数如下:\n',args)
 
     params = args.__dict__
     main(params)

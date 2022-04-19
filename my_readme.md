@@ -159,3 +159,603 @@ python blink/main_dense.py -i
 
 # 快速加载索引, 加载pkl文件缓慢, 64GB内存不够用
 python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_index.pkl
+
+
+# 训练biencoder模型
+python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
+
+# 双编码器的模型结构
+```console
+BiEncoderModule(
+  (context_encoder): BertEncoder(
+    (bert_model): BertModel(
+      (embeddings): BertEmbeddings(
+        (word_embeddings): Embedding(30522, 768, padding_idx=0)
+        (position_embeddings): Embedding(512, 768)
+        (token_type_embeddings): Embedding(2, 768)
+        (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+      )
+      (encoder): BertEncoder(
+        (layer): ModuleList(
+          (0): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (1): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (2): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (3): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (4): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (5): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (6): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (7): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (8): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (9): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (10): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (11): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (pooler): BertPooler(
+        (dense): Linear(in_features=768, out_features=768, bias=True)
+        (activation): Tanh()
+      )
+    )
+  )
+  (cand_encoder): BertEncoder(
+    (bert_model): BertModel(
+      (embeddings): BertEmbeddings(
+        (word_embeddings): Embedding(30522, 768, padding_idx=0)
+        (position_embeddings): Embedding(512, 768)
+        (token_type_embeddings): Embedding(2, 768)
+        (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+      )
+      (encoder): BertEncoder(
+        (layer): ModuleList(
+          (0): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (1): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (2): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (3): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (4): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (5): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (6): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (7): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (8): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (9): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (10): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+          (11): BertLayer(
+            (attention): BertAttention(
+              (self): BertSelfAttention(
+                (query): Linear(in_features=768, out_features=768, bias=True)
+                (key): Linear(in_features=768, out_features=768, bias=True)
+                (value): Linear(in_features=768, out_features=768, bias=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+              (output): BertSelfOutput(
+                (dense): Linear(in_features=768, out_features=768, bias=True)
+                (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+                (dropout): Dropout(p=0.1, inplace=False)
+              )
+            )
+            (intermediate): BertIntermediate(
+              (dense): Linear(in_features=768, out_features=3072, bias=True)
+            )
+            (output): BertOutput(
+              (dense): Linear(in_features=3072, out_features=768, bias=True)
+              (LayerNorm): FusedLayerNorm(torch.Size([768]), eps=1e-12, elementwise_affine=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (pooler): BertPooler(
+        (dense): Linear(in_features=768, out_features=768, bias=True)
+        (activation): Tanh()
+      )
+    )
+  )
+)
+```

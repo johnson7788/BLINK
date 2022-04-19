@@ -22,11 +22,11 @@ from blink.biencoder.biencoder import BiEncoderRanker
 
 
 def read_dataset(dataset_name, preprocessed_json_data_parent_folder, debug=False):
-    file_name = "{}.jsonl".format(dataset_name)
+    file_name = "{}.jsonl".format(dataset_name)  #'train.jsonl'
+    #txt_file_path: 'data/zeshel/blink_format/train.jsonl'
     txt_file_path = os.path.join(preprocessed_json_data_parent_folder, file_name)
-
+    assert os.path.exists(txt_file_path), f"数据文件{txt_file_path}不存在，请检查"
     samples = []
-
     with io.open(txt_file_path, mode="r", encoding="utf-8") as file:
         for line in file:
             samples.append(json.loads(line.strip()))
@@ -123,6 +123,7 @@ def get_logger(output_dir=None):
                 logging.StreamHandler(sys.stdout),
             ],
         )
+        print(f"日志路径是: {output_dir}/log.txt")
     else:
         logging.basicConfig(
             format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
