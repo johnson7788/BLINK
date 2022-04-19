@@ -317,7 +317,7 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
 
 def _process_crossencoder_dataloader(context_input, label_input, crossencoder_params):
     """
-
+    生成交叉编码器的dataloader
     :param context_input:
     :type context_input:
     :param label_input:
@@ -337,7 +337,7 @@ def _process_crossencoder_dataloader(context_input, label_input, crossencoder_pa
 
 def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cuda"):
     """
-
+    交叉编码器推理和计算准确率
     :param crossencoder:
     :type crossencoder:
     :param dataloader:
@@ -541,17 +541,17 @@ def run(
                 continue
 
         else:
-
+            # 计算top_k内的准确率
             biencoder_accuracy = -1
             recall_at = -1
             if not keep_all:
                 # get recall values
                 top_k = args.top_k
-                x = []
-                y = []
+                x = []  # [1, 2, 3, 4, 5, 6, 7, 8, 9] list，topk为1，2，3，4，5，6，。。topk时，y保存对应的准确率
+                y = []      #[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
                 for i in range(1, top_k):
                     temp_y = 0.0
-                    for label, top in zip(labels, nns):
+                    for label, top in zip(labels, nns):   #labels： ground_truth实体id， nns：预测候选实体id，
                         if label in top[:i]:
                             temp_y += 1
                     if len(labels) > 0:
@@ -563,18 +563,18 @@ def run(
                 recall_at = y[-1]
                 print("biencoder accuracy: %.4f" % biencoder_accuracy)
                 print("biencoder recall@%d: %.4f" % (top_k, y[-1]))
-
+            # fast，快速模式，仅仅使用biencoder，即双向编码器
             if args.fast:
 
                 predictions = []
                 for entity_list in nns:
                     sample_prediction = []
-                    for e_id in entity_list:
-                        e_title = id2title[e_id]
+                    for e_id in entity_list:   #对应的预测的实体的id [ 461053  503021  250313  293297  250291   30865 3177287  211906  363285, 3313611]
+                        e_title = id2title[e_id]   #实体的id对应的tilte是什么, eg: 'Warwickshire County Cricket Club'
                         sample_prediction.append(e_title)
-                    predictions.append(sample_prediction)
+                    predictions.append(sample_prediction)  # 每个预测的实体id对应的title， topk的title 列表
 
-                # use only biencoder
+                #当快速模式的时候，仅仅使用双向编码器，这里就返回预测结果了
                 return (
                     biencoder_accuracy,
                     recall_at,
@@ -585,20 +585,20 @@ def run(
                     scores,
                 )
 
-        # prepare crossencoder data
+        # 准备交叉编码器的数据，         context_input,   # torch.Size([14, 32]), 14代表样本数量，32代表提及的上下文的长度  candidate_input,  #torch.Size([14, 10, 128])， 14代表样本数量，10代表topk个候选实体， 128代表kg中实体的上下的长度
+        #         label_input,      #14,  真实的标签对应着候选的预测结果的第几个
         context_input, candidate_input, label_input = prepare_crossencoder_data(
             crossencoder.tokenizer, samples, labels, nns, id2title, id2text, keep_all,
         )
-
         context_input = modify(
             context_input, candidate_input, crossencoder_params["max_seq_length"]
-        )
-
+        ) # context_input： 维度: [14,10,159], 14代表样本数量，10代表topk个候选实体， 159代表拼接后双编码和交叉编码器的input_ids后的样本的长度
+        # 变成dataloader
         dataloader = _process_crossencoder_dataloader(
             context_input, label_input, crossencoder_params
         )
 
-        # run crossencoder and get accuracy
+        # 运行交叉编码器，获取准确率
         accuracy, index_array, unsorted_scores = _run_crossencoder(
             crossencoder,
             dataloader,

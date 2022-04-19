@@ -29,13 +29,13 @@ def get_context_representation(
     max_seq_length,
     mention_key="mention",
     context_key="context",
-    ent_start_token=ENT_START_TAG,
-    ent_end_token=ENT_END_TAG,
-):
+    ent_start_token=ENT_START_TAG,  #'[unused0]'
+    ent_end_token=ENT_END_TAG,  #'[unused1]'
+):    #获取上下文表示和对应的id，这即提及的整个句子的表示： ['[CLS]', 'cricket', '-', '[unused0]', 'leicestershire', '[unused1]', 'take', 'over', 'at', 'top', 'after', 'innings', 'victory', '.', 'london', '1996', '-', '08', '-', '30', 'west', 'indian', 'all', '-', 'round', '##er', 'phil', 'simmons', 'took', 'four', 'for', '[SEP]']
     mention_tokens = []
-    if sample[mention_key] and len(sample[mention_key]) > 0:
-        mention_tokens = tokenizer.tokenize(sample[mention_key])
-        mention_tokens = [ent_start_token] + mention_tokens + [ent_end_token]
+    if sample[mention_key] and len(sample[mention_key]) > 0:   #提及对应的内容， eg: sample[mention_key]: 'leicestershire'
+        mention_tokens = tokenizer.tokenize(sample[mention_key])   #['leicestershire']
+        mention_tokens = [ent_start_token] + mention_tokens + [ent_end_token]  #eg: ['[unused0]', 'leicestershire', '[unused1]']
     # context_left: 获取提及的左侧上下文,
     context_left = sample[context_key + "_left"]
     context_right = sample[context_key + "_right"]
@@ -72,24 +72,24 @@ def get_context_representation(
 def get_candidate_representation(
     candidate_desc,    #'1622318'
     tokenizer,   # <pytorch_transformers.tokenization_bert.BertTokenizer object at 0x7f4f95c32c40>
-    max_seq_length,   #eg: 128
+    max_seq_length,   #候选实体的上下文的长度eg: 128
     candidate_title=None,  #eg: None
     title_tag=ENT_TITLE_TAG,  #eg:'[unused2]'
 ):
     cls_token = tokenizer.cls_token  #eg: '[CLS]'
     sep_token = tokenizer.sep_token
-    cand_tokens = tokenizer.tokenize(candidate_desc)
+    cand_tokens = tokenizer.tokenize(candidate_desc)  # 候选实体的描述文本进行tokenize， ['leicestershire', 'county', 'cricket', 'club', 'is', 'one', 'of', 'eighteen', 'first', '-', 'class', 'county', 'clubs', 'within', 'the', 'domestic', 'cricket', 'structure', 'of', 'england', 'and', 'wales', '.', 'it', 'represents', 'the', 'historic', 'county', 'of', 'leicestershire', '.', 'it', 'has', 'also', 'been', 'representative', 'of', 'the', 'county', 'of', 'rutland', '.', 'the', 'club', "'", 's', 'limited', 'overs', 'team', 'is', 'called', 'the', 'leicestershire', 'foxes', '.', 'founded', 'in', '1879', ',', 'the', 'club', 'had', 'minor', 'county', 'status', 'until', '1894', 'when', 'it', 'was', 'promoted', 'to', 'first', '-', 'class', 'status', 'pending', 'its', 'entry', 'into', 'the', 'county', 'championship', 'in', '1895', '.', 'since', 'then', ',', 'leicestershire', 'have', 'played', 'in', 'every', 'top', '-', 'level', 'domestic', 'cricket', 'competition'...
     if candidate_title is not None:
-        title_tokens = tokenizer.tokenize(candidate_title)
+        title_tokens = tokenizer.tokenize(candidate_title)  #对应的标题也进行['leicestershire', 'county', 'cricket', 'club']
         cand_tokens = title_tokens + [title_tag] + cand_tokens
-    # eg: ['[CLS]', '1622', '##31', '##8', '[SEP]']
+    # eg: ['[CLS]', '1622', '##31', '##8', '[SEP]'], 最大长度-2，为了加上CLS和SEP
     cand_tokens = cand_tokens[: max_seq_length - 2]
     cand_tokens = [cls_token] + cand_tokens + [sep_token]
     #  [101, 28133, 21486, 2620, 102]
     input_ids = tokenizer.convert_tokens_to_ids(cand_tokens)
     padding = [0] * (max_seq_length - len(input_ids))
     input_ids += padding
-    assert len(input_ids) == max_seq_length
+    assert len(input_ids) == max_seq_length, f"实体的上下的长度和要求的最大序列长度不相等，请检查"
 
     return {
         "tokens": cand_tokens,
@@ -203,7 +203,8 @@ def process_mention_data(
             logger.info(
                 "Label ids : " + " ".join([str(v) for v in sample["label"]["ids"]])
             )
-            logger.info("Src : %d" % sample["src"][0])
+            if sample.get("src"):
+                logger.info("Src : %d" % sample["src"][0])
             logger.info("Label_id : %d" % sample["label_idx"][0])
     # context_vecs, [batch_size, max_seq_length], 上下文向量, [14,32], 最大候选长度
     context_vecs = torch.tensor(

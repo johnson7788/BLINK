@@ -42,30 +42,49 @@ logger = None
 
 def modify(context_input, candidate_input, max_seq_length):
     new_input = []
-    context_input = context_input.tolist()
-    candidate_input = candidate_input.tolist()
+    context_input = context_input.tolist()   ## torch.Size([14, 32]), 14代表样本数量，32代表提及的上下文的长度
+    candidate_input = candidate_input.tolist()  ##torch.Size([14, 10, 128])， 14代表样本数量，10代表topk个候选实体， 128代表kg中实体的上下的长度
 
     for i in range(len(context_input)):
         cur_input = context_input[i]
         cur_candidate = candidate_input[i]
         mod_input = []
         for j in range(len(cur_candidate)):
-            # remove [CLS] token from candidate
+            # 从候选实体中移除 [CLS] token， 组成新的样本
             sample = cur_input + cur_candidate[j][1:]
-            sample = sample[:max_seq_length]
+            sample = sample[:max_seq_length]  # max_seq_length： 160
             mod_input.append(sample)
 
         new_input.append(mod_input)
-
+    # 维度: [14,10,159], 14代表样本数量，10代表topk个候选实体， 159代表拼接后双编码和交叉编码器的input_ids后的样本的长度
     return torch.LongTensor(new_input)
 
 
 def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=False, silent=True):
+    """
+
+    :param reranker:
+    :type reranker:
+    :param eval_dataloader:
+    :type eval_dataloader:
+    :param device:
+    :type device:
+    :param logger:
+    :type logger:
+    :param context_length:
+    :type context_length:
+    :param zeshel:
+    :type zeshel:
+    :param silent:
+    :type silent:
+    :return:
+    :rtype:
+    """
     reranker.model.eval()
     if silent:
         iter_ = eval_dataloader
     else:
-        iter_ = tqdm(eval_dataloader, desc="Evaluation")
+        iter_ = tqdm(eval_dataloader, desc="评估")
 
     results = {}
 
