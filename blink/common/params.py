@@ -63,7 +63,7 @@ class BlinkParser(argparse.ArgumentParser):
         """
         parser = self.add_argument_group("Common Arguments")
         parser.add_argument(
-            "--silent", action="store_true", default=True, help="是否打印进度条"
+            "--silent", action="store_true", default=False, help="是否打印进度条, 默认打印进度条"
         )
         parser.add_argument(
             "--debug",
@@ -223,7 +223,7 @@ class BlinkParser(argparse.ArgumentParser):
         )
         parser.add_argument(
             "--shuffle", type=bool, default=False, 
-            help="是否对训练数据进行打乱",
+            help="是否对训练数据进行打乱, 打乱是比较好的",
         )
 
     def add_eval_args(self, args=None):

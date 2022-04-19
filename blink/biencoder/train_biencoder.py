@@ -152,9 +152,9 @@ def main(params):
         torch.cuda.manual_seed_all(seed)
     #加载训练数据
     logger.info("开始加载训练数据: {params['data_path']}")
-    train_samples = utils.read_dataset("train", params["data_path"])
-    logger.info("Read %d train samples." % len(train_samples))
-
+    train_samples = utils.read_dataset("train", params["data_path"], debug=params["debug"])
+    logger.info("共获取到训练样本条数：", len(train_samples))
+    # 处理数据, train_data:dict,{context_vecs: 提及上下文的向量[样本数，max_context_length]， cand_vecs: 知识图谱中候选实体上下文向量[样本数，max_cand_length], labed_idx: ground_truth实体的id [样本数，1], src: [样本数，1], 表示这条数据的主题是什么
     train_data, train_tensor_data = data.process_mention_data(
         train_samples,
         tokenizer,
@@ -169,16 +169,16 @@ def main(params):
         train_sampler = RandomSampler(train_tensor_data)
     else:
         train_sampler = SequentialSampler(train_tensor_data)
-
+    # 构造数据集
     train_dataloader = DataLoader(
         train_tensor_data, sampler=train_sampler, batch_size=train_batch_size
     )
 
-    # Load eval data
+    #加载验证集数据
     # TODO: reduce duplicated code here
-    valid_samples = utils.read_dataset("valid", params["data_path"])
-    logger.info("Read %d valid samples." % len(valid_samples))
-
+    valid_samples = utils.read_dataset("valid", params["data_path"], debug=params["debug"])
+    logger.info("共获取到验证样本条数：", len(valid_samples))
+    # 和训练数据一样进行的预处理
     valid_data, valid_tensor_data = data.process_mention_data(
         valid_samples,
         tokenizer,

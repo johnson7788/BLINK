@@ -31,7 +31,26 @@ def get_context_representation(
     context_key="context",
     ent_start_token=ENT_START_TAG,  #'[unused0]'
     ent_end_token=ENT_END_TAG,  #'[unused1]'
-):    #获取上下文表示和对应的id，这即提及的整个句子的表示： ['[CLS]', 'cricket', '-', '[unused0]', 'leicestershire', '[unused1]', 'take', 'over', 'at', 'top', 'after', 'innings', 'victory', '.', 'london', '1996', '-', '08', '-', '30', 'west', 'indian', 'all', '-', 'round', '##er', 'phil', 'simmons', 'took', 'four', 'for', '[SEP]']
+):
+    """
+    #获取上下文表示和对应的id，这即提及的整个句子的表示： ['[CLS]', 'cricket', '-', '[unused0]', 'leicestershire', '[unused1]', 'take', 'over', 'at', 'top', 'after', 'innings', 'victory', '.', 'london', '1996', '-', '08', '-', '30', 'west', 'indian', 'all', '-', 'round', '##er', 'phil', 'simmons', 'took', 'four', 'for', '[SEP]']
+    :param sample:
+    :type sample:
+    :param tokenizer:
+    :type tokenizer:
+    :param max_seq_length:
+    :type max_seq_length:
+    :param mention_key:
+    :type mention_key:
+    :param context_key:
+    :type context_key:
+    :param ent_start_token:
+    :type ent_start_token:
+    :param ent_end_token:
+    :type ent_end_token:
+    :return:
+    :rtype:
+    """
     mention_tokens = []
     if sample[mention_key] and len(sample[mention_key]) > 0:   #提及对应的内容， eg: sample[mention_key]: 'leicestershire'
         mention_tokens = tokenizer.tokenize(sample[mention_key])   #['leicestershire']
@@ -102,7 +121,7 @@ def process_mention_data(
     tokenizer,
     max_context_length,
     max_cand_length,
-    silent,
+    silent,  # 是否显示进度条
     mention_key="mention",
     context_key="context",
     label_key="label",
@@ -139,7 +158,7 @@ def process_mention_data(
     :type ent_end_token:
     :param title_token:  '[unused2]'
     :type title_token:
-    :param debug: 打印日志
+    :param debug: 打印日志, 是否是debug模式, debug模式加载数据集200条
     :type debug: bool
     :param logger:  eg:None
     :type logger:None或初始化后的logger
@@ -181,10 +200,10 @@ def process_mention_data(
             "label": label_tokens,
             "label_idx": [label_idx],
         }
-
+        # src，表示这条数据的主题是什么
         if "world" in sample:
-            src = sample["world"]
-            src = world_to_id[src]
+            src = sample["world"]  #'muppets'
+            src = world_to_id[src] #eg: 9
             record["src"] = [src]
             use_world = True
         else:
