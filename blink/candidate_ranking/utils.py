@@ -96,7 +96,7 @@ def remove_module_from_state_dict(state_dict):
     return new_state_dict
 
 
-def save_model(model, tokenizer, output_dir):
+def save_model(model, tokenizer, output_dir, logger=None):
     """Saves the model and the tokenizer used in the output directory."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -107,6 +107,10 @@ def save_model(model, tokenizer, output_dir):
     torch.save(model_to_save.state_dict(), output_model_file)
     model_to_save.config.to_json_file(output_config_file)
     tokenizer.save_vocabulary(output_dir)
+    if logger:
+        logger.info(f"保存模型的checkpoint文件到{output_model_file}")
+        logger.info(f"保存模型的config文件到{output_config_file}")
+        logger.info(f"保存模型的tokenizer文件到目录{output_dir}")
 
 
 def get_logger(output_dir=None):

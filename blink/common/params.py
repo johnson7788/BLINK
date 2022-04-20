@@ -164,7 +164,7 @@ class BlinkParser(argparse.ArgumentParser):
         """
         parser = self.add_argument_group("模型的训练参数")
         parser.add_argument(
-            "--evaluate", action="store_true", help="是否运行评估"
+            "--evaluate", action="store_true", help="训练完成后，是否运行模型评估"
         )
         parser.add_argument(
             "--output_eval_file",

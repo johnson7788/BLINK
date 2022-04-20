@@ -39,17 +39,30 @@ from blink.common.params import BlinkParser
 
 logger = None
 
-# The evaluate function during training uses in-batch negatives:
-# for a batch of size B, the labels from the batch are used as label candidates
-# B is controlled by the parameter eval_batch_size
 def evaluate(
     reranker, eval_dataloader, params, device, logger,
 ):
+    """
+    # 训练期间的评估函数使用批次内的负样本。
+    # 对于大小为B的批次，该批次的标签被用作标签候选者，B由参数eval_batch_size控制
+    :param reranker:
+    :type reranker:
+    :param eval_dataloader:
+    :type eval_dataloader:
+    :param params:
+    :type params:
+    :param device:
+    :type device:
+    :param logger:
+    :type logger:
+    :return:
+    :rtype:
+    """
     reranker.model.eval()
     if params["silent"]:
         iter_ = eval_dataloader
     else:
-        iter_ = tqdm(eval_dataloader, desc="Evaluation")
+        iter_ = tqdm(eval_dataloader, desc="评估")
 
     results = {}
 
@@ -64,7 +77,7 @@ def evaluate(
             eval_loss, logits = reranker(context_input, candidate_input)
 
         logits = logits.detach().cpu().numpy()
-        # Using in-batch negatives, the label ids are diagonal
+        # 当使用批次内的数据作为负样本的时候，标签的id正好是对角线的值，所以不用外面传入label了
         label_ids = torch.LongTensor(
                 torch.arange(params["eval_batch_size"])
         ).numpy()
@@ -76,7 +89,7 @@ def evaluate(
         nb_eval_steps += 1
 
     normalized_eval_accuracy = eval_accuracy / nb_eval_examples
-    logger.info("Eval accuracy: %.5f" % normalized_eval_accuracy)
+    logger.info("评估的准确率是: %.5f" % normalized_eval_accuracy)
     results["normalized_accuracy"] = normalized_eval_accuracy
     return results
 
@@ -266,19 +279,20 @@ def main(params):
                 optimizer.zero_grad()
 
             if (step + 1) % (params["eval_interval"] * grad_acc_steps) == 0:
-                logger.info("Evaluation on the development dataset")
+                logger.info("在开发集上进行评估")
                 evaluate(
                     reranker, valid_dataloader, params, device=device, logger=logger,
                 )
                 model.train()
                 logger.info("\n")
 
-        logger.info("*****保存微调的模型*****")
+        logger.info("*****保存一个epoch的微调模型*****")
         epoch_output_folder_path = os.path.join(
             model_output_path, "epoch_{}".format(epoch_idx)
         )
-        utils.save_model(model, tokenizer, epoch_output_folder_path)
-
+        # 保存模型
+        utils.save_model(model, tokenizer, epoch_output_folder_path, logger)
+        logger.info("开始评估这个epoch的微调模型")
         output_eval_file = os.path.join(epoch_output_folder_path, "eval_results.txt")
         results = evaluate(
             reranker, valid_dataloader, params, device=device, logger=logger,
@@ -294,20 +308,20 @@ def main(params):
     execution_time = (time.time() - time_start) / 60
     utils.write_to_file(
         os.path.join(model_output_path, "training_time.txt"),
-        "The training took {} minutes\n".format(execution_time),
+        "训练花费了 {} 分钟\n".format(execution_time),
     )
-    logger.info("The training took {} minutes\n".format(execution_time))
+    logger.info("训练花费了 {} 分钟\n".format(execution_time))
 
     # save the best model in the parent_dir
-    logger.info("Best performance in epoch: {}".format(best_epoch_idx))
+    logger.info("在第 {} 个epoch时，模型效果最好".format(best_epoch_idx))
     params["path_to_model"] = os.path.join(
         model_output_path, 
         "epoch_{}".format(best_epoch_idx),
         WEIGHTS_NAME,
     )
     reranker = load_biencoder(params)
-    utils.save_model(reranker.model, tokenizer, model_output_path)
-
+    utils.save_model(reranker.model, tokenizer, model_output_path, logger)
+    # 进行最后的评估
     if params["evaluate"]:
         params["path_to_model"] = model_output_path
         evaluate(params, logger=logger)
