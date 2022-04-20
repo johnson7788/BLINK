@@ -101,8 +101,8 @@ def get_scheduler(params, optimizer, len_train_data, logger):
     scheduler = WarmupLinearSchedule(
         optimizer, warmup_steps=num_warmup_steps, t_total=num_train_steps,
     )
-    logger.info(" Num optimization steps = %d" % num_train_steps)
-    logger.info(" Num warmup steps = %d", num_warmup_steps)
+    logger.info("优化的steps数量 = %d" % num_train_steps)
+    logger.info("Warmup的steps数量 = %d", num_warmup_steps)
     return scheduler
 
 
@@ -153,7 +153,7 @@ def main(params):
     #加载训练数据
     logger.info("开始加载训练数据: {params['data_path']}")
     train_samples = utils.read_dataset("train", params["data_path"], debug=params["debug"])
-    logger.info("共获取到训练样本条数：", len(train_samples))
+    logger.info(f"共获取到训练样本条数：{len(train_samples)}")
     # 处理数据, train_data:dict,{context_vecs: 提及上下文的向量[样本数，max_context_length]， cand_vecs: 知识图谱中候选实体上下文向量[样本数，max_cand_length], labed_idx: ground_truth实体的id [样本数，1], src: [样本数，1], 表示这条数据的主题是什么
     train_data, train_tensor_data = data.process_mention_data(
         train_samples,
@@ -177,7 +177,7 @@ def main(params):
     #加载验证集数据
     # TODO: reduce duplicated code here
     valid_samples = utils.read_dataset("valid", params["data_path"], debug=params["debug"])
-    logger.info("共获取到验证样本条数：", len(valid_samples))
+    logger.info(f"共获取到验证样本条数：{len(valid_samples)}", )
     # 和训练数据一样进行的预处理
     valid_data, valid_tensor_data = data.process_mention_data(
         valid_samples,
@@ -194,7 +194,7 @@ def main(params):
         valid_tensor_data, sampler=valid_sampler, batch_size=eval_batch_size
     )
 
-    # evaluate before training
+    # 在训练前评估一次
     results = evaluate(
         reranker, valid_dataloader, params, device=device, logger=logger,
     )
@@ -202,14 +202,15 @@ def main(params):
     number_of_samples_per_dataset = {}
 
     time_start = time.time()
-
+    params_file = os.path.join(model_output_path, "training_params.txt")
+    logger.info(f"训练参数写入到文件中: {params_file}")
     utils.write_to_file(
-        os.path.join(model_output_path, "training_params.txt"), str(params)
+        params_file, str(params)
     )
 
-    logger.info("Starting training")
+    logger.info("开始训练")
     logger.info(
-        "device: {} n_gpu: {}, distributed training: {}".format(device, n_gpu, False)
+        "device: {} n_gpu: {}, 是否分布式训练: {}".format(device, n_gpu, False)
     )
 
     optimizer = get_optimizer(model, params)
@@ -232,7 +233,8 @@ def main(params):
 
         for step, batch in enumerate(iter_):
             batch = tuple(t.to(device) for t in batch)
-            context_input, candidate_input, _, _ = batch
+            context_input, candidate_input, _, _ = batch   #获取一个批次数据中的，context_input: 提及的上下文, candidate_input：实体的上下文, labled_idx：标签对应的id, src： 样本的主题
+            # _是score的返回值，结果为[batch_size,batch_size], 表示提及的上下文和候选实体之间的相似度
             loss, _ = reranker(context_input, candidate_input)
 
             # if n_gpu > 1:
@@ -271,7 +273,7 @@ def main(params):
                 model.train()
                 logger.info("\n")
 
-        logger.info("***** Saving fine - tuned model *****")
+        logger.info("*****保存微调的模型*****")
         epoch_output_folder_path = os.path.join(
             model_output_path, "epoch_{}".format(epoch_idx)
         )

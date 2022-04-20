@@ -61,7 +61,7 @@ class BiEncoderModule(torch.nn.Module):
         token_idx_cands,  # eg: None
         segment_idx_cands,  # eg: None
         mask_cands,  # eg: None
-    ):
+    ):  #调用各自的模型进行encoder
         embedding_ctxt = None
         if token_idx_ctxt is not None:
             embedding_ctxt = self.context_encoder(
@@ -161,7 +161,7 @@ class BiEncoderRanker(torch.nn.Module):
         self,
         text_vecs,  # 文本向量， [batch_size, max_context_length], eg: [8,32]
         cand_vecs,   # eg: None
-        random_negs=True,
+        random_negs=True,  # 随机选择负样本
         cand_encs=None,  # 预先计算的实体嵌入， torch.Size([5903527, 1024]), [实体数量，实体嵌入维度].
     ):
         # 首先编码上下文, 生成bert的输入格式， token_idx, segment_idx, mask
@@ -170,40 +170,52 @@ class BiEncoderRanker(torch.nn.Module):
         )
         embedding_ctxt, _ = self.model(
             token_idx_ctxt, segment_idx_ctxt, mask_ctxt, None, None, None
-        )  # 经过bert编码后的上下文的向量， [batch_size, embed_size], eg: [8,1024]
+        )  # 经过bert编码后的上下文的向量， [batch_size, embed_size], eg: [8,1024], 或者[8,768]代表base版本
 
         # 候选实体的encoding如果给定了，那么就不要重新计算了，直接返回上下文encoding和候选encoding之间的矩阵相乘分数
-        #
+        # 推理的时候使用
         if cand_encs is not None:
             return embedding_ctxt.mm(cand_encs.t())
 
-        # Train time. We compare with all elements of the batch
+        # 训练的时候走这里， 获取候选实体的encoding
         token_idx_cands, segment_idx_cands, mask_cands = to_bert_input(
             cand_vecs, self.NULL_IDX
         )
         _, embedding_cands = self.model(
             None, None, None, token_idx_cands, segment_idx_cands, mask_cands
-        )
+        ) # embedding_cands：[batch_size,embed_size]
         if random_negs:
-            # train on random negatives
+            # 使用随机负样本进行训练
             return embedding_ctxt.mm(embedding_cands.t())
         else:
-            # train on hard negatives
+            # 使用困难负样本进行训练
             embedding_ctxt = embedding_ctxt.unsqueeze(1)  # batchsize x 1 x embed_size
             embedding_cands = embedding_cands.unsqueeze(2)  # batchsize x embed_size x 2
             scores = torch.bmm(embedding_ctxt, embedding_cands)  # batchsize x 1 x 1
             scores = torch.squeeze(scores)
             return scores
 
-    # label_input -- negatives provided
-    # If label_input is None, train on in-batch negatives
     def forward(self, context_input, cand_input, label_input=None):
-        flag = label_input is None
-        scores = self.score_candidate(context_input, cand_input, flag)
-        bs = scores.size(0)
+        """
+            # label_input -- 提供的负样本
+            # 如果不提供label_input,那么仅使用批次内的数据进行训练
+        :param context_input:
+        :type context_input:
+        :param cand_input:
+        :type cand_input:
+        :param label_input:
+        :type label_input:
+        :return:
+        :rtype:
+        """
+        flag = label_input is None  # 判断标签是否为空
+        scores = self.score_candidate(context_input, cand_input, flag)  # 结果为[batch_size,batch_size], 表示提及的上下文和候选实体之间的相似度
+        bs = scores.size(0)  #获取batch_size  eg: 8
         if label_input is None:
-            target = torch.LongTensor(torch.arange(bs))
+            # 不提供负样本的话，对角线上的位置即为正样本，所以生成一个
+            target = torch.LongTensor(torch.arange(bs))  # 创建一个[batch_size]的tensor， 如果label不存在的话, eg: tensor([0, 1, 2, 3, 4, 5, 6, 7], device='cuda:0')
             target = target.to(self.device)
+            # scores: [batch_size,batch_size], target: [batch_size]
             loss = F.cross_entropy(scores, target, reduction="mean")
         else:
             loss_fct = nn.BCEWithLogitsLoss(reduction="mean")
@@ -213,8 +225,8 @@ class BiEncoderRanker(torch.nn.Module):
 
 
 def to_bert_input(token_idx, null_idx):
-    """ token_idx is a 2D tensor int.
-        return token_idx, segment_idx and mask
+    """ token_idx 是一个 2D tensor int.
+        return bert模型需要的 token_idx, segment_idx and mask
     """
     segment_idx = token_idx * 0
     mask = token_idx != null_idx

@@ -58,9 +58,9 @@ def get_bert_optimizer(models, type_optimization, learning_rate, fp16=False):
                     parameters_with_decay.append(p)
                     parameters_with_decay_names.append(n)
 
-    print('The following parameters will be optimized WITH decay:')
+    print('以下参数将被优化，并带有衰变:')
     print(ellipse(parameters_with_decay_names, 5, ' , '))
-    print('The following parameters will be optimized WITHOUT decay:')
+    print('以下参数将在没有衰减的情况下进行优化:')
     print(ellipse(parameters_without_decay_names, 5, ' , '))
 
     optimizer_grouped_parameters = [
@@ -81,7 +81,7 @@ def get_bert_optimizer(models, type_optimization, learning_rate, fp16=False):
 
 def ellipse(lst, max_display=5, sep='|'):
     """
-    Like join, but possibly inserts an ellipsis.
+    缩略打印列表
     :param lst: The list to join on
     :param int max_display: the number of items to display for ellipsing.
         If -1, shows all items
@@ -91,6 +91,6 @@ def ellipse(lst, max_display=5, sep='|'):
     choices = list(lst)
     # insert the ellipsis if necessary
     if max_display > 0 and len(choices) > max_display:
-        ellipsis = '...and {} more'.format(len(choices) - max_display)
+        ellipsis = '...和 {} 更多'.format(len(choices) - max_display)
         choices = choices[:max_display] + [ellipsis]
     return sep.join(str(c) for c in choices)
