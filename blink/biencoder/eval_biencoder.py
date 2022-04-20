@@ -126,11 +126,11 @@ def encode_candidate(
     logger,
     is_zeshel,
 ):
-    if is_zeshel:
+    if is_zeshel:  #递归调用自己，直到获得最终的candidate_pool
         src = 0
         cand_encode_dict = {}
         for src, cand_pool in candidate_pool.items():
-            logger.info("Encoding candidate pool %s" % WORLDS[src])
+            logger.info("编码候选实体池%s" % WORLDS[src])
             cand_pool_encode = encode_candidate(
                 reranker,
                 cand_pool,
@@ -151,7 +151,7 @@ def encode_candidate(
     if silent:
         iter_ = data_loader
     else:
-        iter_ = tqdm(data_loader)
+        iter_ = tqdm(data_loader, desc="编码候选实体池")
 
     cand_encode_list = None
     for step, batch in enumerate(iter_):
@@ -249,12 +249,11 @@ def main(params):
 
         if cand_encode_path is not None:
             # Save candidate encoding to avoid re-compute
-            logger.info("Saving candidate encoding to file " + cand_encode_path)
+            logger.info("保存候选编码实体结果到文件 " + cand_encode_path)
             torch.save(candidate_encoding, cand_encode_path)
 
-
     test_samples = utils.read_dataset(params["mode"], params["data_path"])
-    logger.info("Read %d test samples." % len(test_samples))
+    logger.info(f"读取{len(test_samples)}条测试样本" )
    
     test_data, test_tensor_data = data.process_mention_data(
         test_samples,
@@ -272,7 +271,7 @@ def main(params):
         sampler=test_sampler, 
         batch_size=params["eval_batch_size"]
     )
-    
+    # bool值，是否保存topk的结果
     save_results = params.get("save_topk_result")
     new_data = nnquery.get_topk_predictions(
         reranker,
@@ -286,16 +285,17 @@ def main(params):
         save_results,
     )
 
-    if save_results: 
+    if save_results:
         save_data_dir = os.path.join(
             params['output_path'],
             "top%d_candidates" % params['top_k'],
         )
+        logger.info(f"保存topk的测试结果到目录： {save_data_dir}")
         if not os.path.exists(save_data_dir):
             os.makedirs(save_data_dir)
         save_data_path = os.path.join(save_data_dir, "%s.t7" % params['mode'])
+        logger.info(f"保存topk的测试结果到文件： {save_data_path}")
         torch.save(new_data, save_data_path)
-
 
 if __name__ == "__main__":
     parser = BlinkParser(add_model_args=True)
