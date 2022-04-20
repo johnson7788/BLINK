@@ -56,14 +56,14 @@ def get_candidate_pool_tensor_zeshel(
     for src in range(len(WORLDS)):
         if entity_dict.get(src, None) is None:
             continue
-        logger.info("Get candidate desc to id for pool %s" % WORLDS[src])
+        logger.info("获取实体类型为 %s 的描述文本" % WORLDS[src])
         candidate_pool[src] = get_candidate_pool_tensor(
             entity_dict[src],
             tokenizer,
             max_seq_length,
             logger,
         )
-
+    print(f"共获得类型{len(WORLDS)}个描述的实体类型池")
     return candidate_pool
 
 
@@ -97,15 +97,15 @@ def get_candidate_pool_tensor(
     logger,
 ):
     # TODO: add multiple thread process
-    logger.info("Convert candidate text to id")
+    logger.info("转换候选实体类型描述的文本到input_ids， CLS+title+特殊字符+text描述+SEP格式")
     cand_pool = [] 
-    for entity_desc in tqdm(entity_desc_list):
+    for entity_desc in tqdm(entity_desc_list, desc="候选实体类型对应的描述"):
         if type(entity_desc) is tuple:
             title, entity_text = entity_desc
         else:
             title = None
             entity_text = entity_desc
-
+        # rep：是dict，包含tokens和ids， tokens示例:['[CLS]', 'touchdown', 'club', 'of', 'columbus', 'the', 'touchdown', 'club', 'of', 'columbus', 'was', 'founded', 'in', 'columbus', ',', 'ohio', ',', 'in', '1956', 'by', 'sam', 'b', '.', 'nicola', 'at', 'the', 'request', 'of', 'state', 'auditor', 'james', 'a', '.', 'rhodes', ',', 'who', 'later', 'became', 'governor', 'of', 'the', 'state', '.', 'nicola', 'served', 'as', 'the', 'club', "'", 's', 'president', 'until', 'h', '[SEP]']
         rep = data.get_candidate_representation(
                 entity_text, 
                 tokenizer, 
@@ -177,11 +177,11 @@ def load_or_generate_candidate_pool(
     if cand_pool_path is not None:
         # try to load candidate pool from file
         try:
-            logger.info("Loading pre-generated candidate pool from: ")
+            logger.info("开始从如下位置加载预先生成的候选实体向量")
             logger.info(cand_pool_path)
             candidate_pool = torch.load(cand_pool_path)
         except:
-            logger.info("Loading failed. Generating candidate pool")
+            logger.info("加载候选实体失败，准备生成候选实体")
 
     if candidate_pool is None:
         # compute candidate pool from entity list
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     parser.add_eval_args()
 
     args = parser.parse_args()
-    print(args)
+    print('参数如下:\n',args)
 
     params = args.__dict__
 

@@ -7,6 +7,8 @@
 
 # Utility code for zeshel dataset
 import json
+import os
+
 import torch
 
 DOC_PATH = "/private/home/ledell/zeshel/data/documents/"
@@ -45,13 +47,17 @@ def load_entity_dict_zeshel(logger, params):
     else:
         start_idx = 12
         end_idx = 16
-    # load data
+    # 数据的document的路径和data_path在一起
+    data_path = params["data_path"]
+    document_path = os.path.join(os.path.dirname(data_path), "documents")
     for i, src in enumerate(WORLDS[start_idx:end_idx]):
-        fname = DOC_PATH + src + ".json"
+        fname = src + ".json"
+        full_path = os.path.join(document_path, fname)
+        assert os.path.exists(full_path), f"数据集的document文件未找到: {full_path}"
         cur_dict = {}
         doc_list = []
         src_id = world_to_id[src]
-        with open(fname, 'rt') as f:
+        with open(full_path, 'rt') as f:
             for line in f:
                 line = line.rstrip()
                 item = json.loads(line)
@@ -62,7 +68,7 @@ def load_entity_dict_zeshel(logger, params):
                     if len(doc_list) > 200:
                         break
 
-        logger.info("Load for world %s." % src)
+        logger.info("加载world文件 %s 完成" % src)
         entity_dict[src_id] = doc_list
     return entity_dict
 

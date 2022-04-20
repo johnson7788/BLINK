@@ -109,6 +109,7 @@ class BiEncoderRanker(torch.nn.Module):
             self.model = torch.nn.DataParallel(self.model)
 
     def load_model(self, fname, cpu=False):
+        assert os.path.exists(fname), f"模型文件不存在，请检查{fname}"
         if cpu:
             state_dict = torch.load(fname, map_location=lambda storage, location: "cpu")
         else:

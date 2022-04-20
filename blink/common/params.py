@@ -239,7 +239,7 @@ class BlinkParser(argparse.ArgumentParser):
             "--mode",
             default="valid",
             type=str,
-            help="评估模式，选择哪个数据集进行评估，Train / validation / test",
+            help="评估模式，选择哪个数据集进行评估，Train / validation / test, 可以使用多个，例如train,valid,test",
         )
         parser.add_argument(
             "--save_topk_result",

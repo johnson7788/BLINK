@@ -130,6 +130,27 @@ BLINK/
 20 directories, 105 files
 ```
 
+# 一条数据集格式
+```console
+context_left: 提及左侧的样本内容
+context_right: 提及的右侧的样本内容
+mention： 提及的文本内容
+label： 实体的上下文，即实体的描述，
+label_id： 实体的id，即真正的实体，即知识图谱中对应的实体的id
+label_title： 实体的标题，即实体的名字
+world: 实体的主题，或者实体的类型
+
+{
+  "context_left": "goodnight keith moon goodnight keith moon ( isbn 0956011926 ) is a parody of \" goodnight moon \" by bruce worden and clare cross published in 2011 . it is a retelling of the \"",
+  "context_right": "\" story with elements changed to fit into the life of the who drummer keith moon . a two - page illustrated spread depicts a room with moon sleeping on a bed , passed out with beer bottles and vomit surrounding him . the room is filled with various bits of paraphernalia including a trashed drumset , a pinball machine , and an animal doll on top of a bookcase . the scene is representative of the party lifestyle of a rock n \u0027 roll star , particularly the out - of - control aspect of moon \u0027 s personality as seen in the public eye . the inclusion of animal alludes to a persistent rumor that the muppet was based on moon despite the lack of evidence",
+  "mention": "goodnight moon",
+  "label": "Margaret Wise Brown Margaret Wise Brown ( 1910 – 1952 ) was a prolific writer of children \u0027 s books including \" The Noisy Book \" ( 1939 ) , \" The Runaway Bunny \" ( 1942 ) , \" The Little Island \" ( 1946 ) , \" Goodnight Moon \" ( 1947 ) , and many others . In \" Sesame Street \" Episode 2620 , Mr . Handford tries to get Alice Snuffleupagus to fall asleep by reading her \" Big Red Barn \" . Felicia Bond \u0027 s illustrations are shown as he reads the text . At the end of Episode 3785 , Oscar the Grouch reads a worm version of \" Goodnight Moon \" to Slimey after returning from his trip to the Moon .",
+  "label_id": 15817,
+  "label_title": "Margaret Wise Brown",
+  "world": "muppets"
+}
+```
+
 # gensim需要安装gensim==3.8.3，否则报错AttributeError: 'KeyedVectors' object has no attribute 'key_to_index'
 https://github.com/flairNLP/flair/issues/2196
 
@@ -159,7 +180,6 @@ python blink/main_dense.py -i
 
 # 快速加载索引, 加载pkl文件缓慢, 64GB内存不够用
 python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_index.pkl
-
 
 # 训练biencoder模型
 python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
@@ -759,3 +779,6 @@ BiEncoderModule(
   )
 )
 ```
+
+# 从Biencoder模型中获得训练和测试数据集的前64预测结果。
+python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 64 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True
