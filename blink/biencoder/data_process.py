@@ -173,7 +173,7 @@ def process_mention_data(
     if silent:
         iter_ = samples
     else:
-        iter_ = tqdm(samples)
+        iter_ = tqdm(samples, desc="提及数据编码处理")
 
     use_world = True
 
