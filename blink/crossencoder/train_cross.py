@@ -176,13 +176,22 @@ def get_scheduler(params, optimizer, len_train_data, logger):
 
 
 def main(params):
+    """
+    主函数， 训练交叉编码器
+    :param params:
+    :type params:
+    :return:
+    :rtype:
+    """
     model_output_path = params["output_path"]
+    print(f"模型输出路径：{model_output_path}")
     if not os.path.exists(model_output_path):
         os.makedirs(model_output_path)
     logger = utils.get_logger(params["output_path"])
-
-    # Init model
+    #初始化模型
     reranker = CrossEncoderRanker(params)
+    print(f"模型结构是:")
+    print(reranker)
     tokenizer = reranker.tokenizer
     model = reranker.model
 
@@ -198,7 +207,7 @@ def main(params):
             )
         )
 
-    # An effective batch size of `x`, when we are accumulating the gradient accross `y` batches will be achieved by having a batch size of `z = x / y`
+    # 计算训练批次大小， An effective batch size of `x`, when we are accumulating the gradient accross `y` batches will be achieved by having a batch size of `z = x / y`
     # args.gradient_accumulation_steps = args.gradient_accumulation_steps // n_gpu
     params["train_batch_size"] = (
         params["train_batch_size"] // params["gradient_accumulation_steps"]
@@ -217,7 +226,7 @@ def main(params):
 
     max_seq_length = params["max_seq_length"]
     context_length = params["max_context_length"]
-    
+    #
     fname = os.path.join(params["data_path"], "train.t7")
     train_data = torch.load(fname)
     context_input = train_data["context_vecs"]
@@ -412,7 +421,7 @@ if __name__ == "__main__":
 
     # args = argparse.Namespace(**params)
     args = parser.parse_args()
-    print(args)
+    print('参数如下:\n',args)
 
     params = args.__dict__
     main(params)

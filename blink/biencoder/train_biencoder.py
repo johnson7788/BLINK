@@ -134,6 +134,8 @@ def main(params):
 
     #初始化模型
     reranker = BiEncoderRanker(params)
+    print(f"模型结构是:")
+    print(reranker)
     tokenizer = reranker.tokenizer
     model = reranker.model   #双编码器模型
 

@@ -209,6 +209,8 @@ def main(params):
 
     # Init model 
     reranker = BiEncoderRanker(params)
+    print(f"模型结构是:")
+    print(reranker)
     tokenizer = reranker.tokenizer
     model = reranker.model
     

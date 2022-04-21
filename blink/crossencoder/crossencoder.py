@@ -82,9 +82,9 @@ class CrossEncoderRanker(torch.nn.Module):
 
         special_tokens_dict = {
             "additional_special_tokens": [
-                ENT_START_TAG,
-                ENT_END_TAG,
-                ENT_TITLE_TAG,
+                ENT_START_TAG,   #"[unused0]"
+                ENT_END_TAG,    #"[unused1]"
+                ENT_TITLE_TAG,   #"[unused2]"
             ],
         }
         self.tokenizer.add_special_tokens(special_tokens_dict)
