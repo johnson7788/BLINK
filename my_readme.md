@@ -183,7 +183,12 @@ python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_ind
 
 # 训练biencoder模型
 python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
-
+耗时3个半小时
+```
+04/20/2022 21:35:02 - INFO - Blink -   保存模型的checkpoint文件到models/zeshel/biencoder/pytorch_model.bin
+04/20/2022 21:35:02 - INFO - Blink -   保存模型的config文件到models/zeshel/biencoder/config.json
+04/20/2022 21:35:02 - INFO - Blink -   保存模型的tokenizer文件到目录models/zeshel/biencoder
+```
 # 双编码器的模型结构
 ```console
 BiEncoderModule(
@@ -782,3 +787,19 @@ BiEncoderModule(
 
 # 从Biencoder模型中获得训练和测试数据集的前64预测结果。
 python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 64 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True
+耗时1个半小时
+```console
+04/20/2022 22:58:42 - INFO - Blink -   World size : 16
+100%|█████████████████████████████████████████████████████████████████████████████| 10000/10000 [02:44<00:00, 60.76it/s]
+04/20/2022 23:01:26 - INFO - Blink -   In world forgotten_realms
+04/20/2022 23:01:26 - INFO - Blink -   Total: 1200 examples. r@1: 0.4992 r@4: 0.7017 r@8: 0.7575 r@16: 0.8150 r@32: 0.8533 r@64: 0.8850
+04/20/2022 23:01:26 - INFO - Blink -   In world lego
+04/20/2022 23:01:26 - INFO - Blink -   Total: 1199 examples. r@1: 0.4145 r@4: 0.6464 r@8: 0.7264 r@16: 0.7865 r@32: 0.8365 r@64: 0.8724
+04/20/2022 23:01:26 - INFO - Blink -   In world star_trek
+04/20/2022 23:01:26 - INFO - Blink -   Total: 4227 examples. r@1: 0.3866 r@4: 0.5775 r@8: 0.6428 r@16: 0.6996 r@32: 0.7454 r@64: 0.7878
+04/20/2022 23:01:26 - INFO - Blink -   In world yugioh
+04/20/2022 23:01:26 - INFO - Blink -   Total: 3374 examples. r@1: 0.2596 r@4: 0.4366 r@8: 0.5113 r@16: 0.5697 r@32: 0.6144 r@64: 0.6580
+04/20/2022 23:01:26 - INFO - Blink -   Total: 10000 examples. r@1: 0.3606 r@4: 0.5531 r@8: 0.6222 r@16: 0.6800 r@32: 0.7251 r@64: 0.7658
+04/20/2022 23:01:27 - INFO - Blink -   保存topk的测试结果到目录： models/zeshel/top64_candidates
+04/20/2022 23:01:27 - INFO - Blink -   保存topk的测试结果到文件： models/zeshel/top64_candidates/test.t7
+```
