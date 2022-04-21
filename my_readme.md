@@ -181,7 +181,7 @@ python blink/main_dense.py -i
 # 快速加载索引, 加载pkl文件缓慢, 64GB内存不够用
 python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_index.pkl
 
-# 训练biencoder模型
+# Step1: 训练biencoder模型
 python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
 耗时3个半小时
 ```
@@ -785,7 +785,7 @@ BiEncoderModule(
 )
 ```
 
-# 从Biencoder模型中获得训练和测试数据集的前64预测结果。
+# Step2: 从Biencoder模型中获得训练和测试数据集的前64预测结果。
 python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 64 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True
 耗时1个半小时
 ```console
@@ -803,3 +803,45 @@ python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder
 04/20/2022 23:01:27 - INFO - Blink -   保存topk的测试结果到目录： models/zeshel/top64_candidates
 04/20/2022 23:01:27 - INFO - Blink -   保存topk的测试结果到文件： models/zeshel/top64_candidates/test.t7
 ```
+
+# 保存文件的目录结构
+```console
+BLINK/models/zeshel$ tree .
+.
+├── biencoder  # 双编码器训练结果
+│   ├── config.json
+│   ├── epoch_0
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── vocab.txt
+│   ├── epoch_1
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── vocab.txt
+│   ├── epoch_2
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── vocab.txt
+│   ├── epoch_3
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── vocab.txt
+│   ├── epoch_4
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── vocab.txt
+│   ├── log.txt
+│   ├── pytorch_model.bin
+│   ├── training_params.txt
+│   ├── training_time.txt
+│   └── vocab.txt
+├── log.txt
+└── top64_candidates  从双编码器获取的前64预测结果
+    ├── test.t7
+    ├── train.t7
+    └── valid.t7
+
+```
+
+# Step3: 训练和评估交叉编码器模型:
+python blink/crossencoder/train_cross.py --data_path models/zeshel/top64_candidates/ --output_path models/zeshel/crossencoder --learning_rate 2e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 2 --eval_batch_size 2 --bert_model bert-base-uncased --type_optimization all_encoder_layers --add_linear --zeshel True
