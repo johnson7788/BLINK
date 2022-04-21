@@ -60,7 +60,7 @@ class CrossEncoderModule(torch.nn.Module):
         self, token_idx_ctxt, segment_idx_ctxt, mask_ctxt,
     ):
         embedding_ctxt = self.encoder(token_idx_ctxt, segment_idx_ctxt, mask_ctxt)   #维度 [topk候选,1]
-
+        # 返回的维度是[topk候选]
         return embedding_ctxt.squeeze(-1)
 
 
@@ -72,7 +72,7 @@ class CrossEncoderRanker(torch.nn.Module):
             "cuda" if torch.cuda.is_available() and not params["no_cuda"] else "cpu"
         )
         self.n_gpu = torch.cuda.device_count()
-
+        print(f"开始加载预训练模型：{params['bert_model']}")
         if params.get("roberta"):
             self.tokenizer = RobertaTokenizer.from_pretrained(params["bert_model"],)
         else:
@@ -141,7 +141,7 @@ class CrossEncoderRanker(torch.nn.Module):
             text_vecs, self.NULL_IDX, context_len,
         )  # 生成mask和segment id， embedding_ctxt： 【topk候选]
         embedding_ctxt = self.model(token_idx_ctxt, segment_idx_ctxt, mask_ctxt,)
-        # 加回batch_size的维度
+        # 加回batch_size的维度, [batch_size, topk候选], eg: [2,64]
         return embedding_ctxt.view(-1, num_cand)
 
     def forward(self, input_idx, label_input, context_len):

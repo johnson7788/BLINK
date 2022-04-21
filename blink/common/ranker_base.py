@@ -26,6 +26,18 @@ class BertEncoder(nn.Module):
             self.additional_linear = None
 
     def forward(self, token_ids, segment_ids, attention_mask):
+        """
+        当[topk*batch_size， seq_len]后，显存使用量猛增，建议减小topk的大小
+        :param token_ids:
+        :type token_ids:
+        :param segment_ids:
+        :type segment_ids:
+        :param attention_mask:
+        :type attention_mask:
+        :return:
+        :rtype:
+        """
+        # token_ids: [batch_size* topk候选, seq_len], segment_ids: [batch_size* topk候选, seq_len], eg: [128,255], 所以CUDA这里内存zh占用量一下就上来了
         output_bert, output_pooler = self.bert_model(
             token_ids, segment_ids, attention_mask
         )

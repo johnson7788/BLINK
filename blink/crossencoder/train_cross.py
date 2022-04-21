@@ -41,6 +41,17 @@ logger = None
 
 
 def modify(context_input, candidate_input, max_seq_length):
+    """
+    合并context和candidate，并padding, 并返回合并后的tensor，限制最大长度max_context_length
+    :param context_input:
+    :type context_input:
+    :param candidate_input:
+    :type candidate_input:
+    :param max_seq_length:
+    :type max_seq_length:
+    :return:
+    :rtype:
+    """
     new_input = []
     context_input = context_input.tolist()   ## torch.Size([14, 32]), 14代表样本数量，32代表提及的上下文的长度
     candidate_input = candidate_input.tolist()  ##torch.Size([14, 10, 128])， 14代表样本数量，10代表topk个候选实体， 128代表kg中实体的上下的长度
@@ -63,19 +74,19 @@ def modify(context_input, candidate_input, max_seq_length):
 def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=False, silent=True):
     """
 
-    :param reranker:
+    :param reranker: 初始化后的模型
     :type reranker:
     :param eval_dataloader:
     :type eval_dataloader:
-    :param device:
+    :param device: cuda
     :type device:
     :param logger:
     :type logger:
-    :param context_length:
+    :param context_length: 128
     :type context_length:
-    :param zeshel:
+    :param zeshel: 是不是zeshel数据集
     :type zeshel:
-    :param silent:
+    :param silent: 是否是silent，显示进度条与否
     :type silent:
     :return:
     :rtype:
@@ -118,11 +129,11 @@ def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=F
 
         eval_accuracy += tmp_eval_accuracy
         all_logits.extend(logits)
-
+        # 一共训练了多少个样本，都累加起来
         nb_eval_examples += context_input.size(0)
         if zeshel:
             for i in range(context_input.size(0)):
-                src_w = src[i].item()
+                src_w = src[i].item()  #eg: 9, 主题的索引
                 acc[src_w] += eval_result[i]
                 tot[src_w] += 1
         nb_eval_steps += 1
@@ -170,8 +181,8 @@ def get_scheduler(params, optimizer, len_train_data, logger):
     scheduler = WarmupLinearSchedule(
         optimizer, warmup_steps=num_warmup_steps, t_total=num_train_steps,
     )
-    logger.info(" Num optimization steps = %d" % num_train_steps)
-    logger.info(" Num warmup steps = %d", num_warmup_steps)
+    logger.info(" 总共的训练优化step数量 = %d" % num_train_steps)
+    logger.info(" Warmup的step数量 = %d", num_warmup_steps)
     return scheduler
 
 
@@ -226,20 +237,23 @@ def main(params):
 
     max_seq_length = params["max_seq_length"]
     context_length = params["max_context_length"]
-    #
+    # 读取数据, 加载topk训练集
     fname = os.path.join(params["data_path"], "train.t7")
-    train_data = torch.load(fname)
-    context_input = train_data["context_vecs"]
-    candidate_input = train_data["candidate_vecs"]
-    label_input = train_data["labels"]
-    if params["debug"]:
+    print(f"加载训练数据集：{fname}")
+    train_data = torch.load(fname)  # 训练集dict, 包含context_vecs:提及上下文向量[45155，128]， [样本数,max_context_length]  candidate_vecs: [45155,topk候选, max_cand_length], label: 45155, worlds:45155
+    context_input = train_data["context_vecs"]  #提及上下文向量
+    candidate_input = train_data["candidate_vecs"]  #候选词向量
+    label_input = train_data["labels"]  #标签
+    if params["debug"]:  # debug模式，加载200条数据
         max_n = 200
         context_input = context_input[:max_n]
         candidate_input = candidate_input[:max_n]
         label_input = label_input[:max_n]
-
-    context_input = modify(context_input, candidate_input, max_seq_length)
+    print(f"提及上下文的维度是：{context_input.shape}")
+    context_input = modify(context_input, candidate_input, max_seq_length) #合并提及和实体的上下向量
+    print(f"合并提及和实体的上下向量后的维度是：{context_input.shape}")
     if params["zeshel"]:
+        #
         src_input = train_data['worlds'][:len(context_input)]
         train_tensor_data = TensorDataset(context_input, label_input, src_input)
     else:
@@ -251,7 +265,7 @@ def main(params):
         sampler=train_sampler, 
         batch_size=params["train_batch_size"]
     )
-
+    # 验证集加载
     fname = os.path.join(params["data_path"], "valid.t7")
     valid_data = torch.load(fname)
     context_input = valid_data["context_vecs"]
@@ -262,7 +276,7 @@ def main(params):
         context_input = context_input[:max_n]
         candidate_input = candidate_input[:max_n]
         label_input = label_input[:max_n]
-
+    # 合并提及和实体的上下向量
     context_input = modify(context_input, candidate_input, max_seq_length)
     if params["zeshel"]:
         src_input = valid_data["worlds"][:len(context_input)]
@@ -277,28 +291,20 @@ def main(params):
         batch_size=params["eval_batch_size"]
     )
 
-    # evaluate before training
-    results = evaluate(
-        reranker,
-        valid_dataloader,
-        device=device,
-        logger=logger,
-        context_length=context_length,
-        zeshel=params["zeshel"],
-        silent=params["silent"],
-    )
+    print(f"训练之前先评估一次")
+    # results = evaluate(reranker,valid_dataloader, device=device,logger=logger,context_length=context_length,zeshel=params["zeshel"],silent=params["silent"])
 
     number_of_samples_per_dataset = {}
 
     time_start = time.time()
-
+    print(f'保存训练参数到文件: {os.path.join(model_output_path, "training_params.txt")}')
     utils.write_to_file(
         os.path.join(model_output_path, "training_params.txt"), str(params)
     )
 
-    logger.info("Starting training")
+    logger.info("开始训练交叉编码器")
     logger.info(
-        "device: {} n_gpu: {}, distributed training: {}".format(device, n_gpu, False)
+        "设备: {} n_gpu: {}, 分布式训练: {}".format(device, n_gpu, False)
     )
 
     optimizer = get_optimizer(model, params)
@@ -323,8 +329,8 @@ def main(params):
         part = 0
         for step, batch in enumerate(iter_):
             batch = tuple(t.to(device) for t in batch)
-            context_input = batch[0] 
-            label_input = batch[1]
+            context_input = batch[0] # 提及上下文的向量, shape: (batch_size, topk候选, max_seq_length)
+            label_input = batch[1]   #[batch_size]
             loss, _ = reranker(context_input, label_input, context_length)
 
             # if n_gpu > 1:
