@@ -840,11 +840,31 @@ BLINK/models/zeshel$ tree .
     ├── test.t7
     ├── train.t7
     └── valid.t7
+    
+# 32个候选实体是，数据集大小
+ls -alh models/zeshel/top32_candidates/
+total 1.9G
+drwxrwxr-x 2   4.0K Apr 21 16:57 .
+drwxrwxr-x 6   4.0K Apr 21 16:42 ..
+-rw-rw-r-- 1   234M Apr 21 16:57 test.t7
+-rw-rw-r-- 1   1.4G Apr 21 16:42 train.t7
+-rw-rw-r-- 1   267M Apr 21 16:49 valid.t7
 
 ```
 
 # Step3: 训练和评估交叉编码器模型: 可以加--debug，仅使用200条数据 
+
+## 使用top32的样本训练
+python blink/crossencoder/train_cross.py --data_path models/zeshel/top32_candidates/ --output_path models/zeshel/crossencoder --learning_rate 2e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 2 --eval_batch_size 2 --bert_model bert-base-uncased --type_optimization all_encoder_layers --add_linear --zeshel True
+
+## 使用top64的样本训练
 python blink/crossencoder/train_cross.py --data_path models/zeshel/top64_candidates/ --output_path models/zeshel/crossencoder --learning_rate 2e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 2 --eval_batch_size 2 --bert_model bert-base-uncased --type_optimization all_encoder_layers --add_linear --zeshel True
+
+## 或者减小序列长度, 18915MiB显存
+python blink/crossencoder/train_cross.py --data_path models/zeshel/top32_candidates/ --output_path models/zeshel/crossencoder --learning_rate 2e-05 --num_train_epochs 5 --max_context_length 90 --max_cand_length 90 --max_seq_length 188 --train_batch_size 2 --eval_batch_size 2 --bert_model bert-base-uncased --type_optimization all_encoder_layers --add_linear --zeshel True
+
+
+
 ```console
 CrossEncoderRanker(
   (model): CrossEncoderModule(

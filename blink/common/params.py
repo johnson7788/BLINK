@@ -99,13 +99,13 @@ class BlinkParser(argparse.ArgumentParser):
             "--max_seq_length",
             default=256,
             type=int,
-            help="WordPiece tokenization后的最大总输入序列长度。长于此数的序列将被截断，短于此数的序列将被填充。",
+            help="拼接后的最大长度，WordPiece tokenization后的最大总输入序列长度。长于此数的序列将被截断，短于此数的序列将被填充。",
         )
         parser.add_argument(
             "--max_context_length",
             default=128,
             type=int,
-            help="WordPiece tokenization后的上下文的最大总输入序列长度。长于此数的序列将被截断，短于此数的序列将被填充。",
+            help="提及的最大长度，WordPiece tokenization后的上下文的最大总输入序列长度。长于此数的序列将被截断，短于此数的序列将被填充。",
         )
         parser.add_argument(
             "--max_cand_length",
