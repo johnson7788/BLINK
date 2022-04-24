@@ -362,7 +362,7 @@ def main(params):
                 optimizer.zero_grad()
 
             if (step + 1) % (params["eval_interval"] * grad_acc_steps) == 0:
-                logger.info("Evaluation on the development dataset")
+                logger.info("开发集上评估数据")
                 evaluate(
                     reranker,
                     valid_dataloader,
@@ -372,20 +372,20 @@ def main(params):
                     zeshel=params["zeshel"],
                     silent=params["silent"],
                 )
-                logger.info("***** Saving fine - tuned model *****")
+                logger.info("***** 保存Step评估间隔的模型 *****")
                 epoch_output_folder_path = os.path.join(
                     model_output_path, "epoch_{}_{}".format(epoch_idx, part)
                 )
                 part += 1
-                utils.save_model(model, tokenizer, epoch_output_folder_path)
+                utils.save_model(model, tokenizer, epoch_output_folder_path, logger)
                 model.train()
                 logger.info("\n")
 
-        logger.info("***** Saving fine - tuned model *****")
+        logger.info("*****  保存Epoch结束后的模型 *****")
         epoch_output_folder_path = os.path.join(
             model_output_path, "epoch_{}".format(epoch_idx)
         )
-        utils.save_model(model, tokenizer, epoch_output_folder_path)
+        utils.save_model(model, tokenizer, epoch_output_folder_path, logger)
         # reranker.save(epoch_output_folder_path)
 
         output_eval_file = os.path.join(epoch_output_folder_path, "eval_results.txt")
