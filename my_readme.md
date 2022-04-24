@@ -852,7 +852,7 @@ drwxrwxr-x 6   4.0K Apr 21 16:42 ..
 
 ```
 
-# Step3: 训练和评估交叉编码器模型: 可以加--debug，仅使用200条数据 
+# Step3: 训练和评估交叉编码器模型: 可以加--debug，仅使用200条数据 , 训练时间非常长，1个epoch约24小时左右
 
 ## 使用top32的样本训练
 python blink/crossencoder/train_cross.py --data_path models/zeshel/top32_candidates/ --output_path models/zeshel/crossencoder --learning_rate 2e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 2 --eval_batch_size 2 --bert_model bert-base-uncased --type_optimization all_encoder_layers --add_linear --zeshel True
