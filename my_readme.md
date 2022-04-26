@@ -130,7 +130,7 @@ BLINK/
 20 directories, 105 files
 ```
 
-# 一条数据集格式
+# 一条zeshel数据集格式
 ```console
 context_left: 提及左侧的样本内容
 context_right: 提及的右侧的样本内容
@@ -184,8 +184,10 @@ python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_ind
 # Step1: 训练biencoder模型
 data/zeshel/blink_format目录下的数据集也是jsonl格式的
 python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
-耗时3个半小时
+耗时3个半小时, 评估的准确率是: 0.98860
 ```
+04/20/2022 21:34:18 - INFO - Blink -   开始评估这个epoch的微调模型
+04/20/2022 21:34:49 - INFO - Blink -   评估的准确率是: 0.98860
 04/20/2022 21:35:02 - INFO - Blink -   保存模型的checkpoint文件到models/zeshel/biencoder/pytorch_model.bin
 04/20/2022 21:35:02 - INFO - Blink -   保存模型的config文件到models/zeshel/biencoder/config.json
 04/20/2022 21:35:02 - INFO - Blink -   保存模型的tokenizer文件到目录models/zeshel/biencoder
