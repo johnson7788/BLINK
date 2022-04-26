@@ -112,7 +112,7 @@ BLINK/
 │   ├── elq_large_params.txt
 │   ├── elq_webqsp_large.bin
 │   ├── elq_wiki_large.bin
-│   ├── entity.jsonl   #数据条数：5903527， 实体目录的路径, 实体的原数据， 一条数据  #{"text": " Anarchism is an anti-authoritarian political philosophy that rejects hierarchies deemed unjust and advocates their replacement with self-managed, self-governed societies based on voluntary, cooperative institutions. These institutions are often described as stateless societies, although several authors have defined them more specifically as distinct institutions based on non-hierarchical or free associations. Anarchism's central disagreement with other ideologies is that it holds the state to be undesirable, unnecessary, and harmful.  Anarchism is usually placed on the far-left of the political spectrum, and much of its economics and legal philosophy reflect anti-authoritarian interpretations of communism, collectivism, syndicalism, mutualism, or participatory economics. As anarchism does not offer a fixed body of doctrine from a single particular worldview, many anarchist types and traditions exist and varieties of anarchy diverge widely. Anarchist schools of thought can differ fundamentally, supporting anything from extreme individualism to complete collectivism. Strains of anarchism have often been divided into the categories of social and individualist anarchism, or similar dual classifications. ", "idx": "https://en.wikipedia.org/wiki?curid=12", "title": "Anarchism", "entity": "Anarchism"}
+│   ├── entity.jsonl   #所有WIKIPEDIA的数据，原始数据， 数据条数：5903527， 实体目录的路径, 实体的原数据， 一条数据  #{"text": " Anarchism is an anti-authoritarian political philosophy that rejects hierarchies deemed unjust and advocates their replacement with self-managed, self-governed societies based on voluntary, cooperative institutions. These institutions are often described as stateless societies, although several authors have defined them more specifically as distinct institutions based on non-hierarchical or free associations. Anarchism's central disagreement with other ideologies is that it holds the state to be undesirable, unnecessary, and harmful.  Anarchism is usually placed on the far-left of the political spectrum, and much of its economics and legal philosophy reflect anti-authoritarian interpretations of communism, collectivism, syndicalism, mutualism, or participatory economics. As anarchism does not offer a fixed body of doctrine from a single particular worldview, many anarchist types and traditions exist and varieties of anarchy diverge widely. Anarchist schools of thought can differ fundamentally, supporting anything from extreme individualism to complete collectivism. Strains of anarchism have often been divided into the categories of social and individualist anarchism, or similar dual classifications. ", "idx": "https://en.wikipedia.org/wiki?curid=12", "title": "Anarchism", "entity": "Anarchism"}
 │   ├── entity_token_ids_128.t7
 │   └── faiss_hnsw_index.pkl
 ├── README.md
@@ -169,7 +169,7 @@ title:China
 text: China (; lit. "Middle Kingdom"), officially the People's Republic of China (PRC), is a country in East Asia and the world's most populous country, with a population of around /1e9 round 3 billion. Covering approximately , it is the fourth largest country 
 ```
 
-# 实体数量
+# wikipedia实体数量
 5903527个，嵌入的维度 torch.Size([5903527, 1024])
 
 # 使用测试集测试文件
@@ -182,6 +182,7 @@ python blink/main_dense.py -i
 python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_index.pkl
 
 # Step1: 训练biencoder模型
+data/zeshel/blink_format目录下的数据集也是jsonl格式的
 python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
 耗时3个半小时
 ```
@@ -1801,3 +1802,6 @@ CrossEncoderRanker(
   )
 )
 ```
+
+# 测试训练后的zeshel数据,  仅使用biencoder模型测试
+python blink/main_dense.py --fast --test_mentions examples/test_mentions.jsonl --biencoder_model models/zeshel/biencoder/epoch_4/pytorch_model.bin --biencoder_config models/zeshel/biencoder/epoch_4/config.json --entity_catalogue data/zeshel/blink_format/train.jsonl

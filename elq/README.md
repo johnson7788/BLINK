@@ -1,4 +1,4 @@
-# ELQ
+# ELQ 项目， 问答中的实体链接
 
 ELQ (<ins>E</ins>ntity <ins>L</ins>inking for <ins>Q</ins>uestions) is an python library that links entities in questions to the Wikipedia knowledge base.
 

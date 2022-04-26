@@ -709,7 +709,7 @@ if __name__ == "__main__":
         dest="entity_catalogue",
         type=str,
         # default="models/tac_entity.jsonl",  # TAC-KBP
-        default="models/entity.jsonl",  # ALL WIKIPEDIA!
+        default="models/entity.jsonl",  # 所有WIKIPEDIA的数据
         help="实体目录的路径",
     )
     parser.add_argument(

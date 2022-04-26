@@ -166,7 +166,7 @@ def main(params):
     if reranker.n_gpu > 0:
         torch.cuda.manual_seed_all(seed)
     #加载训练数据
-    logger.info("开始加载训练数据: {params['data_path']}")
+    logger.info(f"开始加载训练数据: {params['data_path']}")
     train_samples = utils.read_dataset("train", params["data_path"], debug=params["debug"])
     logger.info(f"共获取到训练样本条数：{len(train_samples)}")
     # 处理数据, train_data:dict,{context_vecs: 提及上下文的向量[样本数，max_context_length]， cand_vecs: 知识图谱中候选实体上下文向量[样本数，max_cand_length], labed_idx: ground_truth实体的id [样本数，1], src: [样本数，1], 表示这条数据的主题是什么
