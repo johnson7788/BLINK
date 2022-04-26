@@ -147,14 +147,14 @@ world: 实体的主题，或者实体的类型
   "label": "Margaret Wise Brown Margaret Wise Brown ( 1910 – 1952 ) was a prolific writer of children \u0027 s books including \" The Noisy Book \" ( 1939 ) , \" The Runaway Bunny \" ( 1942 ) , \" The Little Island \" ( 1946 ) , \" Goodnight Moon \" ( 1947 ) , and many others . In \" Sesame Street \" Episode 2620 , Mr . Handford tries to get Alice Snuffleupagus to fall asleep by reading her \" Big Red Barn \" . Felicia Bond \u0027 s illustrations are shown as he reads the text . At the end of Episode 3785 , Oscar the Grouch reads a worm version of \" Goodnight Moon \" to Slimey after returning from his trip to the Moon .",
   "label_id": 15817,
   "label_title": "Margaret Wise Brown",
-  "world": "muppets"
+  "world": "muppets"  # 实体类型
 }
 ```
 
 # gensim需要安装gensim==3.8.3，否则报错AttributeError: 'KeyedVectors' object has no attribute 'key_to_index'
 https://github.com/flairNLP/flair/issues/2196
 
-# 示例：
+# 交互性测试的示例，输入内容如下：
 ```
 Beijing is the capital of China
 
@@ -788,7 +788,7 @@ BiEncoderModule(
 )
 ```
 
-# Step2: 从Biencoder模型中获得训练和测试数据集的前64预测结果。 top_k =64 ,第三步的训练那么会严重影响batch_size的大小，所以这里设置为32比较好
+# Step2: 从Biencoder模型中获得训练和测试数据集的前64预测结果。 top_k=64 ,第三步的训练那么会严重影响batch_size的大小，所以这里设置为32比较好
 python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 32 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True
 耗时1个半小时
 ```console

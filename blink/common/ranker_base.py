@@ -45,7 +45,7 @@ class BertEncoder(nn.Module):
         if self.additional_linear is not None:
             embeddings = output_pooler   #[batch_size, embedding_dim], eg: [10,1024]
         else:
-            embeddings = output_bert[:, 0, :]
+            embeddings = output_bert[:, 0, :]  # 取CLS向量向量
 
         # #如果有额外线性层，使用额外线性层
         if self.additional_linear is not None:
