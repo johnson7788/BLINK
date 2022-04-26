@@ -1804,4 +1804,4 @@ CrossEncoderRanker(
 ```
 
 # 测试训练后的zeshel数据,  仅使用biencoder模型测试
-python blink/main_dense.py --fast --test_mentions examples/test_mentions.jsonl --biencoder_model models/zeshel/biencoder/epoch_4/pytorch_model.bin --biencoder_config models/zeshel/biencoder/epoch_4/config.json --entity_catalogue data/zeshel/blink_format/train.jsonl
+python blink/main_dense.py --fast --test_mentions examples/test_mentions.jsonl --biencoder_model models/zeshel/biencoder/epoch_4/pytorch_model.bin --biencoder_config models/zeshel/biencoder/epoch_4/config.json --entity_catalogue data/zeshel/blink_format/train.jsonl --biencoder_model_type bert-base-uncased --lowercase

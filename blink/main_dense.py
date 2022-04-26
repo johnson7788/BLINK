@@ -382,6 +382,11 @@ def load_models(args, logger=None):
     with open(args.biencoder_config) as json_file:
         biencoder_params = json.load(json_file)
         biencoder_params["path_to_model"] = args.biencoder_model
+    if args.biencoder_model_type:
+        # 如果给定的模型的类型，那么就使用命令行中的模型类型
+        biencoder_params["bert_model"] = args.biencoder_model_type
+    if args.lowercase:
+        biencoder_params["lowercase"] = True
     biencoder = load_biencoder(biencoder_params)
     # 交叉编码器模型，可以为None或者存在
     crossencoder = None
@@ -703,6 +708,18 @@ if __name__ == "__main__":
         type=str,
         default="models/biencoder_wiki_large.json",
         help="双编码器模型配置",
+    )
+    parser.add_argument(
+        "--biencoder_model_type",
+        dest="biencoder_model_type",
+        type=str,
+        default="bert-large-uncased",
+        help="双编码器模型使用的哪个模型型号, 例如bert-large-uncased, bert-base-uncased",
+    )
+    parser.add_argument(
+        "--lowercase",
+        action='store_true',
+        help="是否小写进行tokenizer",
     )
     parser.add_argument(
         "--entity_catalogue",
