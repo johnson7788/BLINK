@@ -183,7 +183,7 @@ python blink/main_dense.py --faiss_index hnsw --index_path models/faiss_hnsw_ind
 
 # Step1: 训练biencoder模型
 data/zeshel/blink_format目录下的数据集也是jsonl格式的
-python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers
+python blink/biencoder/train_biencoder.py --data_path data/zeshel/blink_format --output_path models/zeshel/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-uncased --type_optimization all_encoder_layers --debug
 耗时3个半小时, 评估的准确率是: 0.98860
 ```
 04/20/2022 21:34:18 - INFO - Blink -   开始评估这个epoch的微调模型
@@ -789,7 +789,7 @@ BiEncoderModule(
 ```
 
 # Step2: 从Biencoder模型中获得训练和测试数据集的前64预测结果。 top_k=64 ,第三步的训练那么会严重影响batch_size的大小，所以这里设置为32比较好
-python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 32 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True
+python blink/biencoder/eval_biencoder.py --path_to_model models/zeshel/biencoder/pytorch_model.bin --data_path data/zeshel/blink_format --output_path models/zeshel --encode_batch_size 8 --eval_batch_size 1 --top_k 32 --save_topk_result --bert_model bert-base-uncased --mode train,valid,test --zeshel True --debug
 耗时1个半小时
 ```console
 04/20/2022 22:58:42 - INFO - Blink -   World size : 16
@@ -1806,3 +1806,6 @@ CrossEncoderRanker(
 ```
 
 # 测试训练后的zeshel数据，不太适用于使用main_dense.py进行推理
+
+# 训练自定义数据集product
+python blink/biencoder/train_biencoder.py --data_path data/product --output_path models/product/biencoder --learning_rate 1e-05 --num_train_epochs 5 --max_context_length 128 --max_cand_length 128 --train_batch_size 8 --eval_batch_size 8 --bert_model bert-base-chinese --type_optimization all_encoder_layers
